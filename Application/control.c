@@ -31,8 +31,7 @@ float Speed_pid_control(float filter, float Speed_Target, float Speed_Kp, float 
 float Turn_pid_control(float turn_kp)
 {
 	float PWM_out = 0;
-	//MPU_Get_Gyroscope(&gx,&gy,&gz);
-	PWM_out = turn_kp*Yaw;
+	PWM_out = turn_kp*gz;
 	return PWM_out;
 }
 
@@ -47,16 +46,28 @@ void limit(float PWMA, float PWMB)
 /***********************
 串联控制
 ***********************/
+//void SpeedBalanceControl(void)
+//{
+//	float speed_out, turn_out, PWM_out, PWMA, PWMB;
+//	speed_out = Speed_pid_control(filter, Speed_target, speed_kp, speed_ki);
+//	turn_out = Turn_pid_control(turn_kp);
+//	PWM_out = angle.out - angle_kp*speed_out;
+//	PWMA = PWM_out + turn_out;
+//	PWMB = PWM_out - turn_out;
+//	limit(PWMA, PWMB);
+//	angle_left_duty(PWMA);
+//	angle_right_duty(PWMB);
+//}
 void SpeedBalanceControl(void)
 {
-	float speed_out, turn_out, PWM_out, PWMA, PWMB;
-	speed_out = Speed_pid_control(filter, Speed_target, speed_kp, speed_ki);
-	turn_out = Turn_pid_control(turn_kp);
-	PWM_out = angle.out - angle_kp*speed_out;
-	PWMA = PWM_out + turn_out;
-	PWMB = PWM_out - turn_out;
-	limit(PWMA, PWMB);
-	angle_left_duty(PWMA);
-	angle_right_duty(PWMB);
+    
+    // Step 1: 速度环（外环） → 输出目标角度
+    
+
+    // Step 2: 平衡环（内环） → 控制角度靠近目标角度
+    //PWM_out = Angle_pid_control(angle.angle, angle_target, angle_kp, angle_kd);
+
+    // Step 3: 转向控制（可选单独处理）
+    
 }
 

@@ -1,5 +1,7 @@
 #include "headfile.h"
 
+#define PitchOffset 9
+
 pid_t angle;
 
 void pid_Init(pid_t *pid, uint32_t mode, float p, float i, float d)
@@ -42,32 +44,6 @@ void pid_cal(pid_t *pid)
 	pid->error[1] = pid->error[0];
 }
 
-
-//void motor_target_set(int16_t tarA, int16_t tarB)
-//{
-//	if(tarA  >= 0)
-//	{
-//		motorA_dir = 0;
-//		motorA.target = tarA;
-//	}
-//	else
-//	{
-//		motorA_dir = 1;
-//		motorA.target = -tarA;
-//	}
-//	if(tarB  >= 0)
-//	{
-//		motorB_dir = 0;
-//		motorB.target = tarB;
-//	}
-//	else
-//	{
-//		motorB_dir = 1;
-//		motorB.target = -tarB;
-//	}
-//	
-//}
-
 //void speed_pid_control(void)
 //{
 //	UpdateEncoderCounts();
@@ -82,14 +58,27 @@ void pid_cal(pid_t *pid)
 //	speed_right_duty(motorB.out);
 //}
 
+	float PWMA, PWMB;
+    float turn_out;
+
 void angle_pid_control(void)
 {
-	MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
-	angle.now = Pitch;
+	angle.now = PitchOffset + Pitch;
+	angle.target = Speed_pid_control(filter, 0, speed_kp, speed_ki);
+//	if (angle.target > 15.0f) angle.target = 15.0f;
+//	if (angle.target < -15.0f) angle.target = -15.0f;
+//	if (fabs(angle.target) < 0.1f) angle.target = 0;
+
 	pid_cal(&angle);
-	pidout_limit(&angle, 800);
-//	angle_left_duty(angle.out);
-//	angle_right_duty(angle.out);	
+	turn_out = Turn_pid_control(turn_kp);
+    // Step 4: 合成PWM控制左右轮
+    PWMA = angle.out + turn_out;
+    PWMB = angle.out - turn_out;
+
+    // Step 5: 限幅并输出
+    limit(PWMA, PWMB);
+    angle_left_duty(PWMA);
+    angle_right_duty(PWMB);	
 }
 
 void angle_target_set(float tar)

@@ -22,6 +22,7 @@
 #include "uart.h"
 #include "mpu6050.h"
 #include "inv_mpu.h"
+#include "exti.h"
 
 #include "pid.h"
 #include "control.h"
