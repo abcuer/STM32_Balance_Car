@@ -1,7 +1,7 @@
 #include "stm32f10x.h"                  // Device header
 #include "PWM.h"
 
-#define offset 10
+#define offset 0
 
 void Motor_Run_Init(void)
 {
@@ -85,5 +85,9 @@ void angle_right_duty(int16_t duty)
 	GPIO_WriteBit(GPIOB, GPIO_Pin_1, (BitAction) motorB_dir);
 	Speed_R(duty + offset);
 }
-
+void motor_duty(float PWMA, float PWMB)
+{
+	angle_left_duty(PWMA);
+	angle_right_duty(PWMB);
+}
 

@@ -12,7 +12,6 @@ void Speed_L(uint16_t Speed_l); /*左轮调速*/
 void Speed_R(uint16_t Speed_r); /*右轮调速*/
 void angle_left_duty(int16_t duty); 
 void angle_right_duty(int16_t duty); 
-//void speed_left_duty(int16_t duty);
-//void speed_right_duty(int16_t duty);
+void motor_duty(float PWMA, float PWMB);
 
 #endif

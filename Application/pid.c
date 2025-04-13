@@ -61,27 +61,27 @@ void pid_cal(pid_t *pid)
 	float PWMA, PWMB;
     float turn_out;
 
-void angle_pid_control(void)
-{
-	angle.now = PitchOffset + Pitch;
-	angle.target = Speed_pid_control(filter, 0, speed_kp, speed_ki);
-//	if (angle.target > 15.0f) angle.target = 15.0f;
-//	if (angle.target < -15.0f) angle.target = -15.0f;
-//	if (fabs(angle.target) < 0.1f) angle.target = 0;
+//void angle_pid_control(void)
+//{
+//	angle.now = PitchOffset + Pitch;
+//	angle.target = Speed_pid_control(filter, 0, speed_kp, speed_ki);
+////	if (angle.target > 15.0f) angle.target = 15.0f;
+////	if (angle.target < -15.0f) angle.target = -15.0f;
+////	if (fabs(angle.target) < 0.1f) angle.target = 0;
 
-	pid_cal(&angle);
-	turn_out = Turn_pid_control(turn_kp);
-    // Step 4: 合成PWM控制左右轮
-    PWMA = angle.out + turn_out;
-    PWMB = angle.out - turn_out;
+//	pid_cal(&angle);
+//	turn_out = Turn_pid_control(turn_kp);
+//    // Step 4: 合成PWM控制左右轮
+//    PWMA = angle.out + turn_out;
+//    PWMB = angle.out - turn_out;
 
-    // Step 5: 限幅并输出
-    limit(PWMA, PWMB);
-    angle_left_duty(PWMA);
-    angle_right_duty(PWMB);	
-}
+//    // Step 5: 限幅并输出
+//    limit(PWMA, PWMB);
+//    angle_left_duty(PWMA);
+//    angle_right_duty(PWMB);	
+//}
 
-void angle_target_set(float tar)
-{
-	angle.target = tar;
-}
+//void angle_target_set(float tar)
+//{
+//	angle.target = tar;
+//}

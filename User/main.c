@@ -3,18 +3,20 @@
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
-float angle_kp = -67*0.6;
-float angle_kd = -270*0.6;
-//float angle_kp = 0;
-//float angle_kd = 0;
+float Med_angle = -8.5;  //机械中值
+float angle_kp = 250*0.6;
+float angle_kd = 0.85*0.6;
+
 /* 速度环 */
 float filter = 0.7;
-float speed_kp = -0.25;
-float speed_ki = -0.25 /200;
-//float speed_kp = -0.12;
-//float speed_ki = -0.12 /200;
+float speed_kp = -0.5;
+float speed_ki = -0.5/200;
+
 /* 转向环 */
-float turn_kp = -0.17;
+float turn_kd = 0;
+
+float angle_out, speed_out, turn_out = 0;
+float PWM_out, PWMA, PWMB = 0;
 
 int main(void)
 {
@@ -27,10 +29,7 @@ int main(void)
 	Motor_Run_Init();
 	encoder_left_Init();
 	encoder_right_Init();
-	
 	UART2_Init(115200);
-	
-	pid_Init(&angle, POSITION_PID, angle_kp,  0, angle_kd);
 	
 	/*OLED显示*/
 	OLED_ShowString(1, 2, "Pitch: ");
@@ -49,14 +48,24 @@ void EXTI0_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line0) != RESET)
     {
-        // 读取最新姿态
-        MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
-		MPU_Get_Gyroscope(&gx, &gy, &gz);
-        // 调用你的控制函数
-        angle_pid_control();
-
-        // 清除中断标志
-        EXTI_ClearITPendingBit(EXTI_Line0);
+		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0) == 1)
+		{
+			MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
+			MPU_Get_Gyroscope(&gx, &gy, &gz);
+			
+			angle_out = angle_pid_control(Med_angle,Pitch, gy);
+			speed_out = speed_pid_control(filter, 0);
+			turn_out = turn_pid_control(gz);
+			
+			PWM_out = angle_out - angle_kp * speed_out;
+			PWMA = PWM_out - turn_out;
+			PWMB = PWM_out + turn_out;
+			
+			Limit(PWMA, PWMB);
+			motor_duty(PWMA, PWMB);
+			
+			EXTI_ClearITPendingBit(EXTI_Line0);
+		}
     }
 }
 

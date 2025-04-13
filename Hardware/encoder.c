@@ -97,10 +97,4 @@ void UpdateEncoderCounts(void)
 {
 	Encoder_left = Encoder_left_Get();
 	Encoder_right = Encoder_right_Get();
-//	EncoderCnt_left = Encoder_left * 0.5 + last_Encoder_left * 0.5;
-//	EncoderCnt_right = Encoder_right * 0.5 +  last_Encoder_right * 0.5;
-//	last_Encoder_left = Encoder_left;
-//	last_Encoder_right = Encoder_right;
-//	Encoder_left = 0;
-//	Encoder_right = 0;
 }

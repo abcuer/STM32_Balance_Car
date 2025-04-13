@@ -1,9 +1,9 @@
 #ifndef _control_h
 #define _control_h
 
-float Speed_pid_control(float filter, float Speed_Target, float Speed_Kp, float Speed_Ki);
-float Turn_pid_control(float turn_kp);
-void limit(float PWMA, float PWMB);
-void SpeedBalanceControl(void);
+float angle_pid_control(float tar, float angle, short gy);
+float speed_pid_control(float x, float speed_tar);
+float turn_pid_control(short gz);
+void Limit(float PWMA, float PWMB);
 
 #endif

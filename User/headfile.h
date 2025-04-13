@@ -24,7 +24,6 @@
 #include "inv_mpu.h"
 #include "exti.h"
 
-#include "pid.h"
 #include "control.h"
 
 extern uint8_t motorA_dir;
@@ -38,7 +37,6 @@ extern int16_t Encoder_right;
 //extern pid_t motorA;
 //extern pid_t motorB;
 
-extern pid_t angle;
 
 extern float Pitch;
 extern float Roll;
@@ -52,6 +50,6 @@ extern float angle_kd;
 extern float filter;
 extern float speed_kp;
 extern float speed_ki;
-extern float turn_kp;
+extern float turn_kd;
 #endif
 

@@ -855,16 +855,6 @@
           <GroupName>Application</GroupName>
           <Files>
             <File>
-              <FileName>pid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Application\pid.c</FilePath>
-            </File>
-            <File>
-              <FileName>pid.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Application\pid.h</FilePath>
-            </File>
-            <File>
               <FileName>control.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Application\control.c</FilePath>

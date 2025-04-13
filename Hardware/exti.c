@@ -10,6 +10,7 @@ void MPU6050_EXTI_Init(void)
 
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; // 输入下拉
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource0); // 连接到 EXTI0
