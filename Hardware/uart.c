@@ -180,7 +180,7 @@ uint8_t Serial_GetRxData(void)
 }
 
 /**
-  * 函    数：USART1中断函数
+  * 函    数：USART2中断函数
   * 参    数：无
   * 返 回 值：无
   * 注意事项：此函数为中断函数，无需调用，中断触发后自动执行
@@ -189,9 +189,11 @@ uint8_t Serial_GetRxData(void)
   */
 void USART2_IRQHandler(void)
 {
+	int16_t data;
 	if (USART_GetITStatus(USART2, USART_IT_RXNE) == SET)		//判断是否是USART3的接收事件触发的中断
 	{
-		Serial_RxData = USART_ReceiveData(USART2);				//读取数据寄存器，存放在接收的数据变量
+		data = USART_ReceiveData(USART2);
+//		Serial_RxData = USART_ReceiveData(USART2);				//读取数据寄存器，存放在接收的数据变量
 		Serial_RxFlag = 1;										//置接收标志位变量为1
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE);			//清除USART3的RXNE标志位
 																//读取数据寄存器会自动清除此标志位

@@ -3,9 +3,9 @@
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
-float Med_angle = -8.5;  //机械中值
+float Med_angle = -7.8;  //机械中值
 float angle_kp = 250*0.6;
-float angle_kd = 0.85*0.6;
+float angle_kd = 0.8*0.6;
 
 /* 速度环 */
 float filter = 0.7;
@@ -13,7 +13,7 @@ float speed_kp = -0.5;
 float speed_ki = -0.5/200;
 
 /* 转向环 */
-float turn_kd = 0;
+float turn_kd = 0.34;
 
 float angle_out, speed_out, turn_out = 0;
 float PWM_out, PWMA, PWMB = 0;
