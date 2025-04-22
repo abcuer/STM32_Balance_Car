@@ -13,7 +13,7 @@ float speed_kp = -0.5;
 float speed_ki = -0.5/200;
 
 /* 转向环 */
-float turn_kd = 0.34;
+float turn_kd = 0.3;
 
 float angle_out, speed_out, turn_out = 0;
 float PWM_out, PWMA, PWMB = 0;
@@ -53,7 +53,7 @@ void EXTI0_IRQHandler(void)
 			MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
 			MPU_Get_Gyroscope(&gx, &gy, &gz);
 			
-			angle_out = angle_pid_control(Med_angle,Pitch, gy);
+			angle_out = angle_pid_control(Med_angle, Pitch, gy);
 			speed_out = speed_pid_control(filter, 0);
 			turn_out = turn_pid_control(gz);
 			
