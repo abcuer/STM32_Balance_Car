@@ -13,5 +13,6 @@ void Speed_R(uint16_t Speed_r); /*ÓÒÂÖµ÷ËÙ*/
 void angle_left_duty(int16_t duty); 
 void angle_right_duty(int16_t duty); 
 void motor_duty(float PWMA, float PWMB);
+void stop(void);
 
 #endif

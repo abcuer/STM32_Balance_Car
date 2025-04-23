@@ -1,7 +1,8 @@
 #include "stm32f10x.h"                  // Device header
-#include "PWM.h"
+#include "headfile.h"
 
 #define offset 0
+uint8_t stop_flag = 0;
 
 void Motor_Run_Init(void)
 {
@@ -91,3 +92,14 @@ void motor_duty(float PWMA, float PWMB)
 	angle_right_duty(PWMB);
 }
 
+void stop(void)
+{
+	if(fabs(Med_angle - Pitch) > 80) 
+	{
+		stop_flag = 1;
+		GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) 1);
+		GPIO_WriteBit(GPIOA, GPIO_Pin_5, (BitAction) 1);
+		GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) 1);
+		GPIO_WriteBit(GPIOB, GPIO_Pin_1, (BitAction) 1);
+	}
+}

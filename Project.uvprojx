@@ -864,6 +864,16 @@
               <FileType>5</FileType>
               <FilePath>.\Application\control.h</FilePath>
             </File>
+            <File>
+              <FileName>mode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Application\mode.c</FilePath>
+            </File>
+            <File>
+              <FileName>mode.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Application\mode.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -187,13 +187,31 @@ uint8_t Serial_GetRxData(void)
   *           函数名为预留的指定名称，可以从启动文件复制
   *           请确保函数名正确，不能有任何差异，否则中断函数将不能进入
   */
+
+/*
+0x00:停车
+0x01:前进
+0x05:后退
+0x03:左转
+0x07:右转
+*/
+uint8_t straight,back,left, right;
 void USART2_IRQHandler(void)
 {
-	int16_t data;
 	if (USART_GetITStatus(USART2, USART_IT_RXNE) == SET)		//判断是否是USART3的接收事件触发的中断
 	{
-		data = USART_ReceiveData(USART2);
-//		Serial_RxData = USART_ReceiveData(USART2);				//读取数据寄存器，存放在接收的数据变量
+		Serial_RxData = USART_ReceiveData(USART2);				//读取数据寄存器，存放在接收的数据变量
+		if(Serial_RxData == 0x00) straight = 0, back = 0, left = 0, right = 0;
+		else if(Serial_RxData == 0x01) straight = 1, back = 0, left = 0, right = 0; //前
+		else if(Serial_RxData == 0x05) straight = 0, back = 1, left = 0, right = 0;	//后
+		else if(Serial_RxData == 0x03) straight = 0, back = 0, left = 1, right = 0;	//左
+		else if(Serial_RxData == 0x07) straight = 0, back = 0, left = 0, right = 1; //右
+		else if(Serial_RxData == 0x08) straight = 1, back = 0, left = 1, right = 0; //左前方
+		else if(Serial_RxData == 0x02) straight = 1, back = 0, left = 0, right = 1; //右前方
+		else if(Serial_RxData == 0x06) straight = 0, back = 1, left = 1, right = 0; //左后方
+		else if(Serial_RxData == 0x04) straight = 0, back = 1, left = 0, right = 1; //右后方
+		else  						   straight = 0, back = 0, left = 0, right = 0;
+		
 		Serial_RxFlag = 1;										//置接收标志位变量为1
 		USART_ClearITPendingBit(USART2, USART_IT_RXNE);			//清除USART3的RXNE标志位
 																//读取数据寄存器会自动清除此标志位

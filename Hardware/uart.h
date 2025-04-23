@@ -13,10 +13,7 @@ uint8_t Serial_GetRxFlag(void);
 uint8_t Serial_GetRxData(void);
 
 
-/*
-	¶Áȡ´®¿ږµ ϔʾʤ³öֵ
-	ʵϖOLEDƁϔʾ¹¦Ĝ
-*/
+
 #endif
 
 

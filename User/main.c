@@ -1,5 +1,6 @@
 #include "headfile.h"
 
+
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
@@ -12,8 +13,15 @@ float filter = 0.7;
 float speed_kp = -0.5;
 float speed_ki = -0.5/200;
 
+/* 前进 后退 */
+float speed_tar = 0;
+
 /* 转向环 */
 float turn_kd = 0.3;
+
+/* 左右移动 */
+float turn_kp = -35;
+float turn_speed = 0;
 
 float angle_out, speed_out, turn_out = 0;
 float PWM_out, PWMA, PWMB = 0;
@@ -53,8 +61,10 @@ void EXTI0_IRQHandler(void)
 			MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
 			MPU_Get_Gyroscope(&gx, &gy, &gz);
 			
+			Bluetooth();
+			
 			angle_out = angle_pid_control(Med_angle, Pitch, gy);
-			speed_out = speed_pid_control(filter, 0);
+			speed_out = speed_pid_control(filter, speed_tar);
 			turn_out = turn_pid_control(gz);
 			
 			PWM_out = angle_out - angle_kp * speed_out;
@@ -63,6 +73,8 @@ void EXTI0_IRQHandler(void)
 			
 			Limit(PWMA, PWMB);
 			motor_duty(PWMA, PWMB);
+			
+			stop();
 			
 			EXTI_ClearITPendingBit(EXTI_Line0);
 		}
