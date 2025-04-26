@@ -1,10 +1,10 @@
-.\objects\sys.o: System\sys.c
-.\objects\sys.o: System\sys.h
+.\objects\sys.o: BSP\sys.c
+.\objects\sys.o: BSP\sys.h
 .\objects\sys.o: .\Start\stm32f10x.h
 .\objects\sys.o: .\Start\core_cm3.h
 .\objects\sys.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\sys.o: .\Start\system_stm32f10x.h
-.\objects\sys.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\sys.o: .\User\stm32f10x_conf.h
 .\objects\sys.o: .\Library\stm32f10x_adc.h
 .\objects\sys.o: .\Start\stm32f10x.h
 .\objects\sys.o: .\Library\stm32f10x_bkp.h
@@ -29,7 +29,7 @@
 .\objects\sys.o: .\Library\stm32f10x_usart.h
 .\objects\sys.o: .\Library\stm32f10x_wwdg.h
 .\objects\sys.o: .\Library\misc.h
-.\objects\sys.o: .\Stm32f103\stm32f10x_it.h
+.\objects\sys.o: .\User\stm32f10x_it.h
 .\objects\sys.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\sys.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\sys.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h

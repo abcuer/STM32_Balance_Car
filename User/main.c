@@ -1,5 +1,7 @@
 #include "headfile.h"
 
+uint8_t mode = 0;
+volatile uint8_t mpu_data_flag = 0;
 
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
@@ -17,7 +19,7 @@ float speed_ki = -0.5/200;
 float speed_tar = 0;
 
 /* 转向环 */
-float turn_kd = 0.3;
+float turn_kd = 0.25;
 
 /* 左右移动 */
 float turn_kp = -35;
@@ -31,32 +33,24 @@ int main(void)
 	mpu6050_Init();	
 	MPU6050_DMP_Init();
 	MPU6050_EXTI_Init();
-	LED_Init();
+	Delay_ms(100);
+	Key_Init();
 	OLED_Init();		
 	PWM_Init();
 	Motor_Run_Init();
 	encoder_left_Init();
 	encoder_right_Init();
+	HCSR04_Init();
 	UART2_Init(115200);
-	
+	Timer_Init();
+	Buzzer_Init();
 	/*OLED显示*/
-	OLED_ShowString(1, 2, "Pitch: ");
-	OLED_ShowString(2, 2, "Left: ");
-	OLED_ShowString(3, 2, "Right: ");
+//	OLED_ShowString(1, 1, "distance:");
+//	OLED_ShowString(1, 13, "cm");
 	
 	while (1)
 	{	
-		OLED_ShowSignedNum(1, 9, Pitch, 3);
-		OLED_ShowSignedNum(2, 9, Encoder_left, 3);
-		OLED_ShowSignedNum(3, 9, Encoder_right, 3);
-	}
-}
-
-void EXTI0_IRQHandler(void)
-{
-    if(EXTI_GetITStatus(EXTI_Line0) != RESET)
-    {
-		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0) == 1)
+		if(mpu_data_flag)
 		{
 			MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
 			MPU_Get_Gyroscope(&gx, &gy, &gz);
@@ -75,9 +69,35 @@ void EXTI0_IRQHandler(void)
 			motor_duty(PWMA, PWMB);
 			
 			stop();
+			mpu_data_flag = 0;
+		}
+		
+		ObstacleAvoid();	
+	}
+}
+
+void EXTI0_IRQHandler(void)
+{
+    if(EXTI_GetITStatus(EXTI_Line0) != RESET)
+    {
+		if(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0) == 1)
+		{
+			mpu_data_flag = 1;
 			
 			EXTI_ClearITPendingBit(EXTI_Line0);
 		}
     }
 }
 
+void TIM2_IRQHandler()		//定时器2的中断函数，不懂直接套用
+{
+	if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
+	{
+		
+		if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_14) == 1)
+		{
+			Time ++;
+		}
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);		//清空标志位
+	}
+}

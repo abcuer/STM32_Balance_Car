@@ -4,7 +4,7 @@
 .\objects\stm32f10x_gpio.o: .\Start\core_cm3.h
 .\objects\stm32f10x_gpio.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\stm32f10x_gpio.o: .\Start\system_stm32f10x.h
-.\objects\stm32f10x_gpio.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\stm32f10x_gpio.o: .\User\stm32f10x_conf.h
 .\objects\stm32f10x_gpio.o: .\Library\stm32f10x_adc.h
 .\objects\stm32f10x_gpio.o: .\Start\stm32f10x.h
 .\objects\stm32f10x_gpio.o: .\Library\stm32f10x_bkp.h

@@ -8,7 +8,7 @@
 .\objects\inv_mpu_dmp_motion_driver.o: .\Start\stm32f10x.h
 .\objects\inv_mpu_dmp_motion_driver.o: .\Start\core_cm3.h
 .\objects\inv_mpu_dmp_motion_driver.o: .\Start\system_stm32f10x.h
-.\objects\inv_mpu_dmp_motion_driver.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\inv_mpu_dmp_motion_driver.o: .\User\stm32f10x_conf.h
 .\objects\inv_mpu_dmp_motion_driver.o: .\Library\stm32f10x_adc.h
 .\objects\inv_mpu_dmp_motion_driver.o: .\Start\stm32f10x.h
 .\objects\inv_mpu_dmp_motion_driver.o: .\Library\stm32f10x_bkp.h

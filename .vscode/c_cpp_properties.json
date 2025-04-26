@@ -3,14 +3,13 @@
         {
             "name": "Target 1",
             "includePath": [
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Start",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\User",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Library",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Hardware",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Application",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Stm32f103",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\System",
-                "c:\\Users\\fascinating_sea\\桌面\\STM32_Balance_Car\\Mpu6050",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\Start",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\User",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\Library",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\Hardware",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\Application",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\Mpu6050",
+                "d:\\Micro_Control_Unit(MCU)\\HCSR04\\STM32_Balance_Car\\BSP",
                 "D:\\Application\\Work\\Keil5\\ARM\\ARMCC\\include",
                 "D:\\Application\\Work\\Keil5\\ARM\\ARMCC\\include\\rw"
             ],

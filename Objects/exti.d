@@ -1,9 +1,9 @@
-.\objects\exti.o: Hardware\exti.c
+.\objects\exti.o: BSP\exti.c
 .\objects\exti.o: .\Start\stm32f10x.h
 .\objects\exti.o: .\Start\core_cm3.h
 .\objects\exti.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\exti.o: .\Start\system_stm32f10x.h
-.\objects\exti.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\exti.o: .\User\stm32f10x_conf.h
 .\objects\exti.o: .\Library\stm32f10x_adc.h
 .\objects\exti.o: .\Start\stm32f10x.h
 .\objects\exti.o: .\Library\stm32f10x_bkp.h

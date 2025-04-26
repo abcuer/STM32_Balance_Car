@@ -8,7 +8,7 @@
 .\objects\inv_mpu.o: .\Start\stm32f10x.h
 .\objects\inv_mpu.o: .\Start\core_cm3.h
 .\objects\inv_mpu.o: .\Start\system_stm32f10x.h
-.\objects\inv_mpu.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\inv_mpu.o: .\User\stm32f10x_conf.h
 .\objects\inv_mpu.o: .\Library\stm32f10x_adc.h
 .\objects\inv_mpu.o: .\Start\stm32f10x.h
 .\objects\inv_mpu.o: .\Library\stm32f10x_bkp.h
@@ -37,9 +37,9 @@
 .\objects\inv_mpu.o: Mpu6050\dmpmap.h
 .\objects\inv_mpu.o: Mpu6050\inv_mpu_dmp_motion_driver.h
 .\objects\inv_mpu.o: Mpu6050\MPU6050.h
-.\objects\inv_mpu.o: .\System\Delay.h
-.\objects\inv_mpu.o: .\System\sys.h
-.\objects\inv_mpu.o: .\Stm32f103\stm32f10x_it.h
+.\objects\inv_mpu.o: .\BSP\Delay.h
+.\objects\inv_mpu.o: .\BSP\sys.h
+.\objects\inv_mpu.o: .\User\stm32f10x_it.h
 .\objects\inv_mpu.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\inv_mpu.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\inv_mpu.o: Mpu6050\MPU6050_I2C.h

@@ -1,11 +1,11 @@
 .\objects\mpu6050_i2c.o: Mpu6050\MPU6050_I2C.c
 .\objects\mpu6050_i2c.o: Mpu6050\MPU6050_I2C.h
-.\objects\mpu6050_i2c.o: .\System\sys.h
+.\objects\mpu6050_i2c.o: .\BSP\sys.h
 .\objects\mpu6050_i2c.o: .\Start\stm32f10x.h
 .\objects\mpu6050_i2c.o: .\Start\core_cm3.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\mpu6050_i2c.o: .\Start\system_stm32f10x.h
-.\objects\mpu6050_i2c.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\mpu6050_i2c.o: .\User\stm32f10x_conf.h
 .\objects\mpu6050_i2c.o: .\Library\stm32f10x_adc.h
 .\objects\mpu6050_i2c.o: .\Start\stm32f10x.h
 .\objects\mpu6050_i2c.o: .\Library\stm32f10x_bkp.h
@@ -30,11 +30,11 @@
 .\objects\mpu6050_i2c.o: .\Library\stm32f10x_usart.h
 .\objects\mpu6050_i2c.o: .\Library\stm32f10x_wwdg.h
 .\objects\mpu6050_i2c.o: .\Library\misc.h
-.\objects\mpu6050_i2c.o: .\Stm32f103\stm32f10x_it.h
+.\objects\mpu6050_i2c.o: .\User\stm32f10x_it.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\mpu6050_i2c.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\objects\mpu6050_i2c.o: .\System\Delay.h
+.\objects\mpu6050_i2c.o: .\BSP\Delay.h

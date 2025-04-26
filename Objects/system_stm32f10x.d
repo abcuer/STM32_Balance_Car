@@ -3,7 +3,7 @@
 .\objects\system_stm32f10x.o: Start\core_cm3.h
 .\objects\system_stm32f10x.o: D:\Application\Work\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\system_stm32f10x.o: Start\system_stm32f10x.h
-.\objects\system_stm32f10x.o: .\Stm32f103\stm32f10x_conf.h
+.\objects\system_stm32f10x.o: .\User\stm32f10x_conf.h
 .\objects\system_stm32f10x.o: .\Library\stm32f10x_adc.h
 .\objects\system_stm32f10x.o: .\Start\stm32f10x.h
 .\objects\system_stm32f10x.o: .\Library\stm32f10x_bkp.h

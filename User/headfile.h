@@ -7,23 +7,26 @@
 #include "stdint.h"
 #include "string.h"
 
-#include "Delay.h"
-#include "Timer.h"
+#include "delay.h"
+#include "timer.h"
 #include "sys.h"
+#include "uart.h"
+#include "pwm.h"
+#include "exti.h"
 
 #include "led.h"
 #include "key.h"
+#include "buzzer.h"
 #include "OLED.h"
-#include "pwm.h"
-#include "motor_run.h"
+#include "motor.h"
 #include "encoder.h"
-#include "uart.h"
 #include "mpu6050.h"
 #include "inv_mpu.h"
-#include "exti.h"
+#include "hc_sr04.h"
 
 #include "control.h"
 #include "mode.h"
+#include "mode_show.h"
 
 extern uint8_t motorA_dir;
 extern uint8_t motorB_dir;
@@ -61,5 +64,8 @@ extern uint8_t right;
 extern uint8_t stop_flag;
 extern uint8_t bluetooth_flag;
 
+extern uint16_t Time;
+extern uint16_t distance;
+extern uint8_t mode;
 #endif
 

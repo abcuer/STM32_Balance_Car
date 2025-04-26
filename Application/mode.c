@@ -1,6 +1,7 @@
 #include "headfile.h"
 
 uint8_t bluetooth_flag = 0;
+uint16_t distance = 0;
 
 void Bluetooth(void)
 {
@@ -52,4 +53,19 @@ void Bluetooth(void)
 		speed_ki = -0.5 / 200; // 恢复自平衡回位
 		turn_kd = 0.3;
 	}
+}
+
+void ObstacleAvoid(void)
+{
+	HCSR04_GetValue();
+	OLED_ShowNum(2, 1, distance, 3);
+	if(distance <= 10)  // 遇到障碍停止
+	{
+		Buzzer_ON();
+	}
+	else
+	{
+		Buzzer_OFF();
+	}
+	
 }
