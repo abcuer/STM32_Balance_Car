@@ -31,6 +31,7 @@ void HCSR04_Start(void)
 void HCSR04_GetValue(void)
 {
 	HCSR04_Start();
+	Delay_us(50);
 	distance = ((Time * 0.0001) * 34000) / 2;
 	Time = 0;  //计时 返回时间计算距离
 }

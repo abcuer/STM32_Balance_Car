@@ -6,22 +6,25 @@ volatile uint8_t mpu_data_flag = 0;
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
-float Med_angle = -7.8;  //机械中值
+float Med_angle = -5.4;  //机械中值
 float angle_kp = 260*0.6;
-float angle_kd = 0.9*0.6;
+float angle_kd = 1*0.6;
 
 /* 速度环 */
 float filter = 0.7;
-float speed_kp = -0.25;
-float speed_ki = -0.25/200;
+//float speed_kp = -0.25;
+//float speed_ki = -0.25/200;
+float speed_kp = -0.4;
+float speed_ki = -0.4/200;
 
 /* 前进 后退 */
 float speed_tar = 0;
 
 /* 转向环 */
-float turn_kd = 0;
+float turn_kd = 0.5;
 
 /* 左右移动 */
+//float turn_kp = -35;
 float turn_kp = -35;
 float turn_speed = 0;
 

@@ -8,29 +8,29 @@ void Bluetooth(void)
 	if(straight || back || left || right)  bluetooth_flag = 1;
 	else  bluetooth_flag = 0;
 	/* À¶ÑÀ¿ØÖÆ */
-	if(straight == 1 && back == 0) 		speed_tar-=2;
-	else if(back == 1 && straight == 0) speed_tar+=2;
+	if(straight == 1 && back == 0) 		speed_tar+=1.5;
+	else if(back == 1 && straight == 0) speed_tar-=1.5;
 	else if(straight == 0 && back == 0) speed_tar = 0;
 	
-	if(left == 1 && right == 0)			turn_speed--; 
-	else if(right == 1 && left == 0) 	turn_speed++;
+	if(left == 1 && right == 0)			turn_speed-=1.5; 
+	else if(right == 1 && left == 0) 	turn_speed+=1.5;
 	else if(right == 0 && left == 0)	turn_speed = 0; 
 	
 	if(straight && left && back == 0 && right == 0)
 	{
-		speed_tar-=1.5;  turn_speed+=1.7; 
+		speed_tar+=0.8;  turn_speed+=1.7; 
 	}
 	else if(straight && right && back == 0 && left == 0)
 	{
-		speed_tar-=1.5;  turn_speed-=1.7;
+		speed_tar+=0.8;  turn_speed-=1.7;
 	}
 	else if(back && left && straight == 0 && right == 0)
 	{
-		speed_tar+=1.5;	turn_speed+=1.7; 
+		speed_tar-=0.8;	turn_speed+=1.7; 
 	}
 	else if(back && right && straight == 0 && left == 0)
 	{
-		speed_tar+=1.5;	turn_speed-=1.7;
+		speed_tar-=0.8;	turn_speed=1.7;
 	}
 	if(straight == 0 && back == 0 && left == 0 && right == 0)
 	{
@@ -58,14 +58,14 @@ void Bluetooth(void)
 void ObstacleAvoid(void)
 {
 	HCSR04_GetValue();
-	OLED_ShowNum(2, 1, distance, 3);
-	if(distance <= 10)  // Óöµ½ÕÏ°­Í£Ö¹
-	{
-		Buzzer_ON();
-	}
-	else
-	{
-		Buzzer_OFF();
-	}
+	OLED_ShowSignedNum(2, 1, distance, 3);
+//	if(distance <= 10)  // Óöµ½ÕÏ°­Í£Ö¹
+//	{
+//		Buzzer_ON();
+//	}
+//	else
+//	{
+//		Buzzer_OFF();
+//	}
 	
 }

@@ -59,11 +59,11 @@ void angle_left_duty(int16_t duty)
 {
 	if(duty >= 0)
 	{
-		motorA_dir = 0;
+		motorA_dir = 1;
 	}
 	else
 	{
-		motorA_dir = 1;
+		motorA_dir = 0;
 		duty = -duty;
 	}
 	GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) motorA_dir);
@@ -75,11 +75,11 @@ void angle_right_duty(int16_t duty)
 {
 	if(duty >= 0)
 	{
-		motorB_dir = 0;
+		motorB_dir = 1;
 	}
 	else
 	{
-		motorB_dir = 1;
+		motorB_dir = 0;
 		duty = -duty;
 	}
 	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) !motorB_dir);
