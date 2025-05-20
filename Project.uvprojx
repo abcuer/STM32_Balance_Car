@@ -865,6 +865,16 @@
               <FilePath>.\Application\control.h</FilePath>
             </File>
             <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Application\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Application\pid.h</FilePath>
+            </File>
+            <File>
               <FileName>mode.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Application\mode.c</FilePath>
@@ -873,16 +883,6 @@
               <FileName>mode.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Application\mode.h</FilePath>
-            </File>
-            <File>
-              <FileName>mode_show.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Application\mode_show.c</FilePath>
-            </File>
-            <File>
-              <FileName>mode_show.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Application\mode_show.h</FilePath>
             </File>
           </Files>
         </Group>

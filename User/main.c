@@ -6,13 +6,13 @@ float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
 float Med_angle = -5.4;  //机械中值
-float angle_kp = 270*0.6;
+float angle_kp = 260*0.6;
 float angle_kd = 1*0.6;
 
 /* 速度环 */
 float filter = 0.7;
-float speed_kp = -0.5;
-float speed_ki = -0.5/200;
+float speed_kp = -0.42;
+float speed_ki = -0.42/200;
 
 /* 前进 后退 */
 float speed_tar = 0;
@@ -38,35 +38,33 @@ int main(void)
 	LED_Init();
 	OLED_Init();		
 	PWM_Init();
-	Motor_Run_Init();
+	Motor_Init();
 	encoder_left_Init();
 	encoder_right_Init();
 	HCSR04_Init();
 	UART2_Init(115200);
 	Timer_Init();
-	Buzzer_Init();
+	Buzzer_Init();	
+	pid_init(&dist, POSITION_PID, -0.5, 0, 1); 
+	
 	/*OLED显示*/
 	OLED_ShowString(1, 1, "dis:");
 	OLED_ShowString(1, 13, "cm");
-	
 	while (1)
 	{	
-//		Buzzer_ON();
-		select();
-		ObstacleAvoid();	
 		if(mpu_data_flag)
 		{
 			MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
 			MPU_Get_Gyroscope(&gx, &gy, &gz);
-
-			if(mode == 1) Bluetooth();
-
-			if (balance_enable)
+			
+			if (balance_enable) 					// 默认平衡模式
 			{
+				ModeSelect();
+		
 				angle_out = angle_pid_control(Med_angle, Pitch, gy);
 				speed_out = speed_pid_control(filter, speed_tar);
 				turn_out = turn_pid_control(gz);
-
+				
 				PWM_out = angle_out - angle_kp * speed_out;
 				PWMA = PWM_out - turn_out;
 				PWMB = PWM_out + turn_out;
@@ -74,18 +72,17 @@ int main(void)
 				Limit(PWMA, PWMB);
 				motor_duty(PWMA, PWMB);
 			} 
-			checkLiftState();  
-			if (fabs(Med_angle - Pitch) > 70 && stop_flag == 0)
+			
+			checkLiftState();  											// 拿起检测
+			if (fabs(Med_angle - Pitch) > 70 && stop_flag == 0)			// 倒地检测
 			{
 				balance_enable = 0;
 				stop();
 				stop_flag = 1;
-			}
-			detectPutDown(); 
+			}   
+			detectPutDown(); 											// 放下检测
 			mpu_data_flag = 0;
 		}
-		
-		
 	}
 }
 

@@ -1,21 +1,13 @@
 #include "headfile.h"
 
-#define PitchOffset 9
+pid_t dist;
 
-pid_t angle;
-
-void pid_Init(pid_t *pid, uint32_t mode, float p, float i, float d)
+void pid_init(pid_t *pid, uint32_t mode, float p, float i, float d)
 {
 	pid->pid_mode = mode;
 	pid->p = p;
 	pid->i = i;
 	pid->d = d;
-}
-
-void pidout_limit(pid_t *pid, int16_t limit)
-{
-	if(pid->out >= limit) pid->out = limit;
-	if(pid->out <= -limit) pid->out = -limit;
 }
 
 void pid_cal(pid_t *pid)
@@ -37,51 +29,33 @@ void pid_cal(pid_t *pid)
 		pid->iout += pid->i * pid->error[0];
 		pid->dout = pid->d * (pid->error[0] - pid->error[1]);
 		pid->out = pid->pout + pid->iout + pid->dout;
+		
+		if(fabs(pid->error[0]) < 3.0f) {
+			pid->out = 0;
+			pid->iout = 0; // 可选：同时清除积分项，防止小误差导致积分累积
+		}
 	}
 
 	// ��¼ǰ����ƫ��
 	pid->error[2] = pid->error[1];
 	pid->error[1] = pid->error[0];
+
+	// ����޷�
 }
 
-//void speed_pid_control(void)
-//{
-//	UpdateEncoderCounts();
-//	if(motorA_dir) motorA.now = EncoderCnt_left; 	else  motorA.now = -EncoderCnt_left;
-//	if(motorB_dir) motorB.now = EncoderCnt_right;	else  motorB.now = -EncoderCnt_right;
-//	pid_cal(&motorA);
-//	pid_cal(&motorB);
-//	pidout_limit(&motorA, 800);
-//	pidout_limit(&motorB, 800);
-//	angle_target_set((motorA.out+ motorB.out) / 20);
-//	speed_left_duty(motorA.out);
-//	speed_right_duty(motorB.out);
-//}
+void pidout_limit(pid_t *pid)
+{
+	if(pid->out>=19000)	
+		pid->out=19000;
+	if(pid->out<=-19000)	
+		pid->out=-19000;
+}
 
-	float PWMA, PWMB;
-    float turn_out;
-
-//void angle_pid_control(void)
-//{
-//	angle.now = PitchOffset + Pitch;
-//	angle.target = Speed_pid_control(filter, 0, speed_kp, speed_ki);
-////	if (angle.target > 15.0f) angle.target = 15.0f;
-////	if (angle.target < -15.0f) angle.target = -15.0f;
-////	if (fabs(angle.target) < 0.1f) angle.target = 0;
-
-//	pid_cal(&angle);
-//	turn_out = Turn_pid_control(turn_kp);
-//    // Step 4: 合成PWM控制左右轮
-//    PWMA = angle.out + turn_out;
-//    PWMB = angle.out - turn_out;
-
-//    // Step 5: 限幅并输出
-//    limit(PWMA, PWMB);
-//    angle_left_duty(PWMA);
-//    angle_right_duty(PWMB);	
-//}
-
-//void angle_target_set(float tar)
-//{
-//	angle.target = tar;
-//}
+void dist_pid_control(void)
+{
+	dist.target = 30;
+	dist.now = distance;
+	pid_cal(&dist);
+	pidout_limit(&dist);
+	speed_tar = dist.out;
+}

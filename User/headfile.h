@@ -26,7 +26,7 @@
 
 #include "control.h"
 #include "mode.h"
-#include "mode_show.h"
+#include "pid.h"
 
 extern uint8_t motorA_dir;
 extern uint8_t motorB_dir;
@@ -69,5 +69,7 @@ extern uint16_t distance;
 extern uint8_t mode;
 
 extern uint8_t balance_enable;
+extern pid_t dist;
+
 #endif
 

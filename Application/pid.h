@@ -21,13 +21,9 @@ typedef struct
 
 }pid_t;
 
-void pid_Init(pid_t *pid, uint32_t mode, float p, float i, float d);
+void pid_init(pid_t *pid, uint32_t mode, float p, float i, float d);
 void pid_cal(pid_t *pid);
-void pidout_limit(pid_t *pid, int16_t limit);
-
-//void speed_pid_control(void);
-//void motor_target_set(int16_t tarA, int16_t tarB);
-void angle_pid_control(void);
-void angle_target_set(float tar);
+void pidout_limit(pid_t *pid);
+void dist_pid_control(void);
 
 #endif

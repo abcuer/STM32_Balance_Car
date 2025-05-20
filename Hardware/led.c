@@ -11,22 +11,22 @@ void LED_Init(void)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-void Avoid_OFF(void)
+void Follow_OFF(void)
 {
 	GPIO_ResetBits(GPIOB, GPIO_Pin_14);
 }
 
-void Avoid_ON(void)
+void Follow_ON(void)
 {
 	GPIO_SetBits(GPIOB, GPIO_Pin_14);
 }
 
-void Blue_OFF(void)
+void BlueTooth_OFF(void)
 {
 	GPIO_ResetBits(GPIOB, GPIO_Pin_15);
 }
 
-void Blue_ON(void)
+void BlueTooth_ON(void)
 {
 	GPIO_SetBits(GPIOB, GPIO_Pin_15);
 }
