@@ -5,5 +5,5 @@
 void HCSR04_Init(void);
 void HCSR04_Start(void);
 void HCSR04_GetValue(void);
-
+float Filter_Distance(float new_value);
 #endif

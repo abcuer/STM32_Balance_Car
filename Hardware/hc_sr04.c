@@ -1,5 +1,11 @@
 #include "headfile.h"
 
+#define FILTER_SIZE 5  // 滑动窗口大小
+
+float distance_buffer[FILTER_SIZE] = {0};  // 存储历史测距值
+uint8_t filter_index = 0;
+
+
 uint16_t Time; //记录时间
 void HCSR04_Init(void)
 {
@@ -28,10 +34,26 @@ void HCSR04_Start(void)
 	GPIO_ResetBits(GPIOC, GPIO_Pin_15);
 }
 
+float Filter_Distance(float new_value)
+{
+    distance_buffer[filter_index] = new_value;  // 存入当前值
+    filter_index = (filter_index + 1) % FILTER_SIZE;  // 更新索引（循环）
+
+    float sum = 0;
+    for (int i = 0; i < FILTER_SIZE; i++)
+    {
+        sum += distance_buffer[i];
+    }
+
+    return sum / FILTER_SIZE;  // 返回平均值
+}
+
+
 void HCSR04_GetValue(void)
 {
 	HCSR04_Start();
 	Delay_us(50);
-	distance = ((Time * 0.0001) * 34000) / 2;
+	float raw_distance = ((Time * 0.0001) * 34000) / 2;
 	Time = 0;  //计时 返回时间计算距离
+	distance = Filter_Distance(raw_distance);
 }

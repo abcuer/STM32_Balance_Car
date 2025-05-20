@@ -2,7 +2,11 @@
 #define _led_h
 
 void LED_Init(void);
-void LED_Red_ON(void);
-void LED_Red_OFF(void);
+void Avoid_ON(void);
+void Avoid_OFF(void);
+void Blue_ON(void);
+void Blue_OFF(void);
+void Balance_ON(void);
+void Balance_OFF(void);
 
 #endif

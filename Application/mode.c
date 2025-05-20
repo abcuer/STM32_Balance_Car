@@ -2,6 +2,21 @@
 
 uint8_t bluetooth_flag = 0;
 uint16_t distance = 0;
+uint8_t mode = 0;
+uint8_t SoundLight_flag = 0;
+uint8_t SoundLight_time = 0;
+
+void select(void)
+{
+	if(Key_GetNum()) mode ++;
+	mode %= 3;
+	if(mode == 0) Balance_ON();
+	else Balance_OFF();
+	if(mode == 1) Blue_ON();
+	else Blue_OFF();
+	if(mode == 2) Avoid_ON();
+	else Avoid_OFF();
+}	
 
 void Bluetooth(void)
 {
@@ -55,17 +70,50 @@ void Bluetooth(void)
 	}
 }
 
+void SoundLight(void)
+{
+	if(SoundLight_flag == 0)
+	{
+		Buzzer_ON();
+		SoundLight_flag = 1;
+	}
+}
+
+void UpdateSoundLight(void)
+{
+    if(SoundLight_flag)
+    {
+        SoundLight_time++;
+
+		if(SoundLight_time >= 20) 
+		{
+			Buzzer_OFF();
+			SoundLight_time = 0;
+			SoundLight_flag = 0; 
+		}
+        
+    }
+}
+uint8_t obstacle_blocked = 0;  // 是否被障碍物拦住
+
 void ObstacleAvoid(void)
 {
 	HCSR04_GetValue();
-	OLED_ShowSignedNum(2, 1, distance, 3);
-//	if(distance <= 10)  // 遇到障碍停止
-//	{
-//		Buzzer_ON();
-//	}
-//	else
-//	{
-//		Buzzer_OFF();
-//	}
-	
+	OLED_ShowSignedNum(1, 10, distance, 3);
+	if(mode == 1)
+	{
+		if(!obstacle_blocked && distance < 20.0f) 
+		{
+			SoundLight();
+			obstacle_blocked = 1;
+		}
+		else if (obstacle_blocked && distance > 50.0f)
+        {
+            obstacle_blocked = 0; // 恢复触发能力
+        }
+		if (!obstacle_blocked)
+        {
+            Bluetooth();  // 正常蓝牙控制
+        }
+	}
 }

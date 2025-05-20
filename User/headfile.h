@@ -67,5 +67,7 @@ extern uint8_t bluetooth_flag;
 extern uint16_t Time;
 extern uint16_t distance;
 extern uint8_t mode;
+
+extern uint8_t balance_enable;
 #endif
 
