@@ -1,9 +1,9 @@
 # 基于Stm32f103c8t6的自平衡小车
 
 ![前视图](./src/7a1b74cef987346cb069695975bb60c.jpg)
-![俯视图](src\e7bc3cd2b40d70d83f9f5210f651f61.jpg)
-![后视图](src\3dd9fb143a53159b16f8972a5833be3.jpg)
-![PCB](src\0a053a80354407da4dd48eb7ba30a58.jpg)
+![俯视图](./src/e7bc3cd2b40d70d83f9f5210f651f61.jpg)
+![后视图](./src/3dd9fb143a53159b16f8972a5833be3.jpg)
+![PCB](./src/0a053a80354407da4dd48eb7ba30a58.jpg)
 
 # [PCB开源地址](https://oshwhub.com/fascinating_sea/stm32_balancecar)
 
