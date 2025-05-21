@@ -74,9 +74,19 @@ void ModeSelect(void)
 	else Follow_OFF();
 	
 	ObstacleAvoid();							// À¶ÑÀ¾àÀë¼ì²â
-
+	if(mode == 1) // À¶ÑÀ
+	{
+		speed_kp = -0.42;
+		speed_ki = -0.42/200;
+	}
+	else
+	{
+		speed_kp = -0.6;
+		speed_ki = -0.6/200;
+	}
 	if(mode == 2)						// ³¬Éù²¨¸úËæ
 	{
+
 		if(distance > 0 && distance <= 80)
 		{
 			dist_pid_control(); 

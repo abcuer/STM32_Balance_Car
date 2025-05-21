@@ -11,8 +11,8 @@ float angle_kd = 1*0.6;
 
 /* 速度环 */
 float filter = 0.7;
-float speed_kp = -0.42;
-float speed_ki = -0.42/200;
+float speed_kp = -0.6;
+float speed_ki = -0.6/200;
 
 /* 前进 后退 */
 float speed_tar = 0;
@@ -60,6 +60,7 @@ int main(void)
 			if (balance_enable) 					// 默认平衡模式
 			{
 				ModeSelect();
+				
 		
 				angle_out = angle_pid_control(Med_angle, Pitch, gy);
 				speed_out = speed_pid_control(filter, speed_tar);
