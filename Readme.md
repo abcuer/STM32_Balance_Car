@@ -5,7 +5,7 @@
 ![后视图](./src/3dd9fb143a53159b16f8972a5833be3.jpg)
 ![PCB](./src/0a053a80354407da4dd48eb7ba30a58.jpg)
 
-# [PCB开源地址](https://pro.lceda.cn/editor#id=8368d58da278413fbd0a85511ccdcacd)
+# [PCB开源地址](https://oshwhub.com/fascinating_sea/stm32_balancecar)
 
 # [视频演示](https://www.bilibili.com/video/BV1s4JLzUE3u/?vd_source=990d350c3d7fb93042ed4a36bf2b1c83)
 ## 电子模块(带商品链接)
