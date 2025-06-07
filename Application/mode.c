@@ -1,6 +1,5 @@
 #include "headfile.h"
 
-
 #define LIFT_ANGLE_THRESHOLD  40.0f    // Pitch 大于这个角度判断为拿起
 #define LIFT_GYRO_THRESHOLD   100       // 陀螺仪 y 轴角速度
 #define PUTDOWN_ANGLE_THRESHOLD 20.0f  // Pitch 小于这个角度认为可能已放下
@@ -17,10 +16,97 @@ uint8_t mode = 0;
 uint8_t SoundLight_flag = 0;
 uint8_t SoundLight_time = 0;
 
+float Pitch, Roll, Yaw;
+short gx,gy,gz;
+/* 直立环 */
+float Med_angle = -5.4;  //机械中值
+float angle_kp = 270*0.6;
+float angle_kd = 1*0.6;
 
-/**
- * 判断是否拿起
- */
+/* 速度环 */
+float filter = 0.7;
+float speed_kp = -0.6;
+float speed_ki = -0.6/200;
+
+/* 前进 后退 */
+float speed_tar = 0;
+
+/* 转向环 */
+float turn_kd = 0.5;
+
+/* 左右移动 */
+
+float turn_kp = -35;
+float turn_speed = 0;
+
+float angle_out, speed_out, turn_out = 0;
+float PWM_out, PWMA, PWMB = 0;
+
+void Balance(void)
+{
+	MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
+	MPU_Get_Gyroscope(&gx, &gy, &gz);
+	
+	if (balance_enable) 					// 默认平衡模式
+	{
+		ModeSelect();
+
+		angle_out = angle_pid_control(Med_angle, Pitch, gy);
+		speed_out = speed_pid_control(filter, speed_tar);
+		turn_out = turn_pid_control(gz);
+		
+		PWM_out = angle_out - angle_kp * speed_out;
+		PWMA = PWM_out - turn_out;
+		PWMB = PWM_out + turn_out;
+
+		Limit(PWMA, PWMB);
+		motor_duty(PWMA, PWMB);
+	} 
+}
+
+// 模式选择
+void ModeSelect(void)
+{
+	if(Key_GetNum()) mode ++;
+	mode %= 3;
+	if(mode == 0) Balance_ON();
+	else Balance_OFF();
+	if(mode == 1)
+	{
+		BlueTooth_ON();
+	}
+	else 
+	{
+		BlueTooth_OFF();
+	}
+	if(mode == 2) Follow_ON();
+	else Follow_OFF();
+	
+	ObstacleAvoid();							// 蓝牙避障检测
+	if(mode == 1) // 蓝牙
+	{
+		speed_kp = -0.42;
+		speed_ki = -0.42/200;
+	}
+	else
+	{
+		speed_kp = -0.6;
+		speed_ki = -0.6/200;
+	}
+	if(mode == 2)						// 超声波跟随
+	{
+		if(distance > 0 && distance <= 80)
+		{
+			dist_pid_control(); 
+		}
+		else
+		{
+			speed_tar = 0;  // 停止移动，避免无效距离导致继续前进
+		}
+	}
+}	
+
+// 提起检测
 void checkLiftState(void)
 {
     // 拿起条件：角度大且角速度较大，持续一定时间
@@ -38,9 +124,7 @@ void checkLiftState(void)
 	}
 }
 
-/**
- * 判断是否放下
- */
+// 着陆检测
 void detectPutDown(void)
 {
     if (lifted_flag || stop_flag)
@@ -62,42 +146,18 @@ void detectPutDown(void)
     }
 }
 
-void ModeSelect(void)
+// 倒地检测
+void checkFallDown(void)
 {
-	if(Key_GetNum()) mode ++;
-	mode %= 3;
-	if(mode == 0) Balance_ON();
-	else Balance_OFF();
-	if(mode == 1) BlueTooth_ON();
-	else BlueTooth_OFF();
-	if(mode == 2) Follow_ON();
-	else Follow_OFF();
-	
-	ObstacleAvoid();							// 蓝牙距离检测
-	if(mode == 1) // 蓝牙
+	if (fabs(Med_angle - Pitch) > 70 && stop_flag == 0)			// 倒地检测
 	{
-		speed_kp = -0.42;
-		speed_ki = -0.42/200;
-	}
-	else
-	{
-		speed_kp = -0.6;
-		speed_ki = -0.6/200;
-	}
-	if(mode == 2)						// 超声波跟随
-	{
-
-		if(distance > 0 && distance <= 80)
-		{
-			dist_pid_control(); 
-		}
-		else
-		{
-			speed_tar = 0;  // 停止移动，避免无效距离导致继续前进
-		}
-	}
-}	
-
+		balance_enable = 0;
+		stop();
+		stop_flag = 1;
+	}   
+}
+ 
+// 蓝牙控制
 void Bluetooth(void)
 {
 	if(straight || back || left || right)  bluetooth_flag = 1;
@@ -155,6 +215,7 @@ void SoundLight(void)
 	if(SoundLight_flag == 0)
 	{
 		Buzzer_ON();
+		Follow_ON();
 		SoundLight_flag = 1;
 	}
 }
@@ -168,12 +229,15 @@ void UpdateSoundLight(void)
 		if(SoundLight_time >= 20) 
 		{
 			Buzzer_OFF();
+			Follow_OFF();
 			SoundLight_time = 0;
 			SoundLight_flag = 0; 
 		}
         
     }
 }
+
+// 距离获取
 uint8_t obstacle_blocked = 0;  // 是否被障碍物拦住
 
 void ObstacleAvoid(void)
@@ -185,12 +249,12 @@ void ObstacleAvoid(void)
 		if (!obstacle_blocked) Bluetooth();  // 正常蓝牙控制
 		if(distance > 0 && distance <= 80)
 		{
-			if(!obstacle_blocked && distance < 20.0f) 
+			if(!obstacle_blocked && distance < 25.0f) 
 			{
 				SoundLight();
 				obstacle_blocked = 1;
 			}
-			else if (obstacle_blocked && distance > 50.0f)
+			else if (obstacle_blocked && distance > 60.0f)
 			{
 				obstacle_blocked = 0; // 恢复触发能力
 			}

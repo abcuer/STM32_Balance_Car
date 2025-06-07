@@ -42,5 +42,4 @@ void Limit(float PWMA, float PWMB)
 	if(PWMA < -limit) PWMA = -limit;
 	if(PWMB > limit) PWMB = limit;
 	if(PWMB < -limit) PWMB = -limit;
-	
 }

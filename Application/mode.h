@@ -1,11 +1,14 @@
 #ifndef _mode_h
 #define _mode_h
 
+void Balance(void);
+void ModeSelect(void);
 void checkLiftState(void);
 void detectPutDown(void);
-void ModeSelect(void);
+void checkFallDown(void);
 void Bluetooth(void);
 void ObstacleAvoid(void);
 void SoundLight(void);
 void UpdateSoundLight(void);
+
 #endif
