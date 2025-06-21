@@ -95,6 +95,7 @@ void motor_duty(float PWMA, float PWMB)
 void stop(void)
 {
 	stop_flag = 1;  // 立即设置停止标志
+	DataClear();
 	GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) 1);
 	GPIO_WriteBit(GPIOA, GPIO_Pin_5, (BitAction) 1);
 	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) 1);

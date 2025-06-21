@@ -1,6 +1,7 @@
 #ifndef _mode_h
 #define _mode_h
 
+void System_Init(void);
 void Balance(void);
 void ModeSelect(void);
 void checkLiftState(void);

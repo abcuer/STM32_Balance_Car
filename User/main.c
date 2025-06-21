@@ -4,23 +4,7 @@ volatile uint8_t mpu_data_flag = 0;
 
 int main(void)
 {
-	mpu6050_Init();	
-	MPU6050_DMP_Init();
-	MPU6050_EXTI_Init();
-	Delay_ms(300);
-	Key_Init();
-	LED_Init();
-	OLED_Init();		
-	PWM_Init();
-	Motor_Init();
-	encoder_left_Init();
-	encoder_right_Init();
-	HCSR04_Init();
-	UART2_Init(115200);
-	Timer_Init();
-	Buzzer_Init();	
-	pid_init(&dist, POSITION_PID, -1, 0, 1); 
-	
+	System_Init();														// 模块初始化
 	/*OLED显示*/
 	OLED_ShowString(1, 1, "dis:");
 	OLED_ShowString(1, 13, "cm");
@@ -29,9 +13,9 @@ int main(void)
 		if(mpu_data_flag)
 		{
 			Balance();													// 主控制逻辑
-			checkLiftState();  											// 拿起检测
+			checkLiftState();  											// 提起检测
 			checkFallDown();											// 倒地检测
-			detectPutDown(); 											// 放下检测
+			detectPutDown(); 											// 着陆检测
 			mpu_data_flag = 0;
 		}
 	}

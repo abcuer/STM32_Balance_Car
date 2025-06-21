@@ -19,14 +19,14 @@ uint8_t SoundLight_time = 0;
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
 /* 直立环 */
-float Med_angle = -5.4;  //机械中值
+float Med_angle = -5.3;  //机械中值
 float angle_kp = 270*0.6;
 float angle_kd = 1*0.6;
 
 /* 速度环 */
 float filter = 0.7;
-float speed_kp = -0.6;
-float speed_ki = -0.6/200;
+float speed_kp = -0.58;
+float speed_ki = -0.58/200;
 
 /* 前进 后退 */
 float speed_tar = 0;
@@ -42,6 +42,36 @@ float turn_speed = 0;
 float angle_out, speed_out, turn_out = 0;
 float PWM_out, PWMA, PWMB = 0;
 
+/**
+ * @brief 系统初始化函数，初始化所有模块和外设
+ * @param 无
+ * @retval 无
+ */
+void System_Init(void)
+{
+	mpu6050_Init();	
+	MPU6050_DMP_Init();
+	MPU6050_EXTI_Init();
+	Delay_ms(300);
+	Key_Init();
+	LED_Init();
+	OLED_Init();		
+	PWM_Init();
+	Motor_Init();
+	encoder_left_Init();
+	encoder_right_Init();
+	HCSR04_Init();
+	UART2_Init(115200);
+	Timer_Init();
+	Buzzer_Init();	
+	pid_init(&dist, POSITION_PID, -0.6, 0, 0.1); 
+}
+
+/**
+ * @brief 平衡控制主函数，DMP读取姿态并计算三环PID，控制小车直立
+ * @param 无
+ * @retval 无
+ */
 void Balance(void)
 {
 	MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
@@ -64,37 +94,50 @@ void Balance(void)
 	} 
 }
 
-// 模式选择
+/**
+ * @brief 模式选择与切换函数，根据按键切换运行模式（平衡、蓝牙、跟随）
+ * @param 无
+ * @retval 无
+ * @note 会根据当前模式调整PID参数和控制逻辑
+ */
 void ModeSelect(void)
 {
-	if(Key_GetNum()) mode ++;
-	mode %= 3;
-	if(mode == 0) Balance_ON();
-	else Balance_OFF();
-	if(mode == 1)
+	static uint8_t last_mode = 0xFF;  // 初始化为一个不可能的模式值
+	if(Key_GetNum())
 	{
+		mode++;
+		mode %= 3;
+	}
+	// 仅当模式发生变化时清除数据
+    if (mode != last_mode)
+    {
+        DataClear();
+        last_mode = mode;  // 更新记录
+    }
+	
+	if(mode == 0) 											//平衡模式
+	{
+		speed_kp = -0.58;
+		speed_ki = -0.58/200;
+		Balance_ON(); 
+	}
+	else Balance_OFF();  
+	if(mode == 1)  //蓝牙遥控模式
+	{
+		speed_kp = -0.55;
+		speed_ki = 0;
 		BlueTooth_ON();
 	}
 	else 
 	{
 		BlueTooth_OFF();
 	}
-	if(mode == 2) Follow_ON();
-	else Follow_OFF();
-	
-	ObstacleAvoid();							// 蓝牙避障检测
-	if(mode == 1) // 蓝牙
+	if(mode == 2)											// 超声波跟随
 	{
-		speed_kp = -0.42;
-		speed_ki = -0.42/200;
-	}
-	else
-	{
-		speed_kp = -0.6;
-		speed_ki = -0.6/200;
-	}
-	if(mode == 2)						// 超声波跟随
-	{
+		speed_kp = -0.5;
+		speed_ki = -0.5/200;
+
+		Follow_ON(); 
 		if(distance > 0 && distance <= 80)
 		{
 			dist_pid_control(); 
@@ -104,9 +147,16 @@ void ModeSelect(void)
 			speed_tar = 0;  // 停止移动，避免无效距离导致继续前进
 		}
 	}
+	else Follow_OFF(); 
+	ObstacleAvoid();					// 蓝牙避障检测
 }	
 
-// 提起检测
+/**
+ * @brief 提起检测：检测是否被提起
+ * @param 无
+ * @retval 无
+ * @note 根据Pitch角度和陀螺仪Y轴速度判断，触发停止控制
+ */
 void checkLiftState(void)
 {
     // 拿起条件：角度大且角速度较大，持续一定时间
@@ -118,13 +168,17 @@ void checkLiftState(void)
 			lifted_flag = 1;
 			balance_enable = 0;
 			lifted_counter = 0;
-			stop_flag = 1;
 			stop();
 		}
 	}
 }
 
-// 着陆检测
+/**
+ * @brief 着陆检测：检测是否已经放下
+ * @param 无
+ * @retval 无
+ * @note 如果Pitch角度小于阈值且静止一段时间，恢复平衡控制
+ */
 void detectPutDown(void)
 {
     if (lifted_flag || stop_flag)
@@ -135,7 +189,7 @@ void detectPutDown(void)
             {
 				lifted_flag = 0;
 				putdown_counter = 0;
-				stop_flag = 0;           // ? 清除紧急停止标志
+				stop_flag = 0;           // 清除紧急停止标志
 				balance_enable = 1; 
             }
         }
@@ -146,18 +200,27 @@ void detectPutDown(void)
     }
 }
 
-// 倒地检测
+/**
+ * @brief 倒地检测函数
+ * @param 无
+ * @retval 无
+ * @note 若倾斜角度超过设定阈值，则关闭平衡控制并停止电机
+ */
 void checkFallDown(void)
 {
 	if (fabs(Med_angle - Pitch) > 70 && stop_flag == 0)			// 倒地检测
 	{
 		balance_enable = 0;
 		stop();
-		stop_flag = 1;
 	}   
 }
  
-// 蓝牙控制
+/**
+ * @brief 蓝牙遥控模式控制逻辑
+ * @param 无
+ * @retval 无
+ * @note 根据前后左右命令调整目标速度与转向速度
+ */
 void Bluetooth(void)
 {
 	if(straight || back || left || right)  bluetooth_flag = 1;
@@ -173,7 +236,7 @@ void Bluetooth(void)
 	
 	if(straight && left && back == 0 && right == 0)
 	{
-		speed_tar+=0.4;  turn_speed+=1.2; 
+		speed_tar+=0.3;  turn_speed+=1.3; 
 	}
 	else if(straight && right && back == 0 && left == 0)
 	{
@@ -185,7 +248,7 @@ void Bluetooth(void)
 	}
 	else if(back && right && straight == 0 && left == 0)
 	{
-		speed_tar-=0.4;	turn_speed=1.2;
+		speed_tar-=0.2;	turn_speed=1.4;
 	}
 	if(straight == 0 && back == 0 && left == 0 && right == 0)
 	{
@@ -205,11 +268,15 @@ void Bluetooth(void)
 	}
 	else
 	{
-		speed_ki = -0.4 / 200; // 恢复自平衡回位
 		turn_kd = 0.5;
 	}
 }
 
+/**
+ * @brief 声光提示启动函数（例如避障触发后报警）
+ * @param 无
+ * @retval 无
+ */
 void SoundLight(void)
 {
 	if(SoundLight_flag == 0)
@@ -220,6 +287,11 @@ void SoundLight(void)
 	}
 }
 
+/**
+ * @brief 声光提示状态更新函数，计时并关闭报警
+ * @param 无
+ * @retval 无
+ */
 void UpdateSoundLight(void)
 {
     if(SoundLight_flag)
@@ -237,7 +309,12 @@ void UpdateSoundLight(void)
     }
 }
 
-// 距离获取
+/**
+ * @brief 蓝牙避障逻辑
+ * @param 无
+ * @retval 无
+ * @note 距离过近则触发声光报警并禁止运动，距离恢复后解除限制
+ */
 uint8_t obstacle_blocked = 0;  // 是否被障碍物拦住
 
 void ObstacleAvoid(void)
@@ -262,3 +339,5 @@ void ObstacleAvoid(void)
 		}
 	}
 }
+
+

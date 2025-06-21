@@ -2,6 +2,8 @@
 
 #define limit 19000
 
+static float Encoder_Err, filtered_Err, last_filtered_Err, Encoder_S;
+
 /* 机械中值，当前角度， gy*/
 float angle_pid_control(float tar, float angle, short gy)
 {
@@ -13,7 +15,6 @@ float angle_pid_control(float tar, float angle, short gy)
 float speed_pid_control(float x, float speed_tar)
 {
 	float PWM_out;
-	static float Encoder_Err, filtered_Err, last_filtered_Err, Encoder_S;
 	UpdateEncoderCounts();
 	Encoder_Err = (Encoder_left + Encoder_right) - speed_tar;
 	filtered_Err = (1-x)*Encoder_Err + x*last_filtered_Err;
@@ -42,4 +43,9 @@ void Limit(float PWMA, float PWMB)
 	if(PWMA < -limit) PWMA = -limit;
 	if(PWMB > limit) PWMB = limit;
 	if(PWMB < -limit) PWMB = -limit;
+}
+
+void DataClear(void)
+{
+	Encoder_Err = 0, filtered_Err = 0, last_filtered_Err = 0, Encoder_S = 0;
 }
