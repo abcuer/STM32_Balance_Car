@@ -26,6 +26,10 @@ void HCSR04_Init(void)
 	GPIO_ResetBits(GPIOC, GPIO_Pin_15);
 }
 
+/**
+ * @brief 启动 HC-SR04 超声波测距模块
+ * @note 通过给 Trig 引脚发送一个 10us 的高电平脉冲，触发一次测距
+ */
 void HCSR04_Start(void)
 {
 	//给触发信号
@@ -34,6 +38,12 @@ void HCSR04_Start(void)
 	GPIO_ResetBits(GPIOC, GPIO_Pin_15);
 }
 
+/**
+ * @brief 对测距结果进行滑动平均滤波
+ * @param new_value 当前测得的原始距离值
+ * @retval float 平均滤波后的距离值
+ * @note 使用长度为 FILTER_SIZE 的循环缓冲区进行均值滤波，降低抖动
+ */
 float Filter_Distance(float new_value)
 {
     distance_buffer[filter_index] = new_value;  // 存入当前值
@@ -48,7 +58,13 @@ float Filter_Distance(float new_value)
     return sum / FILTER_SIZE;  // 返回平均值
 }
 
-
+/**
+ * @brief 获取一次距离测量值并滤波
+ * @note 流程：
+ *       1. 触发一次超声波测距
+ *       2. 根据回响时间 Time 计算距离（单位：cm）
+ *       3. 使用滤波函数平滑输出
+ */
 void HCSR04_GetValue(void)
 {
 	HCSR04_Start();

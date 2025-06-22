@@ -5,16 +5,33 @@
 #define PUTDOWN_ANGLE_THRESHOLD 20.0f  // Pitch 小于这个角度认为可能已放下
 #define PUTDOWN_WAIT_COUNT    20       // 放下后静止时间（例如 50 * 5ms = 250ms）
 
-uint8_t lifted_flag = 0;
-uint16_t putdown_counter = 0;
-uint16_t lifted_counter = 0;
-uint8_t balance_enable = 1;
+uint8_t lifted_flag = 0;       
+// 提起标志位：1 表示小车被提起，停止平衡控制；0 表示正常运行
 
-uint8_t bluetooth_flag = 0;
-uint16_t distance = 0;
-uint8_t mode = 0;
-uint8_t SoundLight_flag = 0;
-uint8_t SoundLight_time = 0;
+uint16_t putdown_counter = 0;  
+// 放下计数器：检测放下后是否静止一定时间，满足条件后重新启用平衡控制
+
+uint16_t lifted_counter = 0;   
+// 提起计数器：用于判断提起状态是否持续达到设定时间，以确认确实被提起
+
+uint8_t balance_enable = 1;    
+// 平衡控制使能标志：1 表示开启平衡控制（即允许运行 PID 控制）；0 表示暂停控制输出（如倒地/被提起）
+
+uint8_t bluetooth_flag = 0;    
+// 蓝牙控制激活标志：用于判断当前是否接收到蓝牙遥控指令（非零则表示正在遥控）
+
+uint16_t distance = 0;         
+// 当前测得的超声波距离值（单位：cm），用于跟随/避障控制逻辑
+
+uint8_t mode = 0;              
+// 当前工作模式编号：0=平衡模式，1=蓝牙遥控，2=超声波跟随
+
+uint8_t SoundLight_flag = 0;   
+// 声光提示激活标志：1 表示正在进行声光报警，如避障蜂鸣器提醒；0 表示无报警
+
+uint8_t SoundLight_time = 0;   
+// 声光提示计时器：记录声光报警的持续时间，到达设定值后自动关闭蜂鸣器等提示
+
 
 float Pitch, Roll, Yaw;
 short gx,gy,gz;
@@ -339,5 +356,3 @@ void ObstacleAvoid(void)
 		}
 	}
 }
-
-
