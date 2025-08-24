@@ -5,59 +5,55 @@
 #define PUTDOWN_ANGLE_THRESHOLD 20.0f  // Pitch 小于这个角度认为可能已放下
 #define PUTDOWN_WAIT_COUNT    20       // 放下后静止时间（例如 50 * 5ms = 250ms）
 
-uint8_t lifted_flag = 0;       
-// 提起标志位：1 表示小车被提起，停止平衡控制；0 表示正常运行
-
-uint16_t putdown_counter = 0;  
-// 放下计数器：检测放下后是否静止一定时间，满足条件后重新启用平衡控制
-
-uint16_t lifted_counter = 0;   
-// 提起计数器：用于判断提起状态是否持续达到设定时间，以确认确实被提起
-
-uint8_t balance_enable = 1;    
-// 平衡控制使能标志：1 表示开启平衡控制（即允许运行 PID 控制）；0 表示暂停控制输出（如倒地/被提起）
-
 uint8_t bluetooth_flag = 0;    
 // 蓝牙控制激活标志：用于判断当前是否接收到蓝牙遥控指令（非零则表示正在遥控）
-
 uint16_t distance = 0;         
 // 当前测得的超声波距离值（单位：cm），用于跟随/避障控制逻辑
-
 uint8_t mode = 0;              
 // 当前工作模式编号：0=平衡模式，1=蓝牙遥控，2=超声波跟随
 
-uint8_t SoundLight_flag = 0;   
-// 声光提示激活标志：1 表示正在进行声光报警，如避障蜂鸣器提醒；0 表示无报警
+BalanceState_t balance_state = {
+    .lifted_flag = 0, 			// 提起标志位：1 表示小车被提起，0 表示正常运行
+    .putdown_counter = 0,		// 放下计数器
+    .lifted_counter = 0,		// 提起计数器
+    .balance_enable = 1,		// 平衡控制使能：1 开启，0 暂停
+};
 
-uint8_t SoundLight_time = 0;   
-// 声光提示计时器：记录声光报警的持续时间，到达设定值后自动关闭蜂鸣器等提示
+SoundLight_t sound_light = {
+	.flag = 0, // 声光提示激活标志：1 表示正在进行声光报警，如避障蜂鸣器提醒；0 表示无报警
+	.time = 0  // 声光提示计时器：记录声光报警的持续时间，到达设定值后自动关闭蜂鸣器等提示
+};
+ 
+Euler_t euler;
+Gyro_t gyro;
 
-
-float Pitch, Roll, Yaw;
-short gx,gy,gz;
 /* 直立环 */
-float Med_angle = -5.3;  //机械中值
-float angle_kp = 270*0.6;
-float angle_kd = 1*0.6;
+UprightPID_t upright_pid = {
+    .kp = 270*0.6,
+    .kd = 1*0.6,
+	.out = 0,
+    .med_angle = -5.3
+};
 
 /* 速度环 */
-float filter = 0.7;
-float speed_kp = -0.58;
-float speed_ki = -0.58/200;
-
-/* 前进 后退 */
-float speed_tar = 0;
+SpeedPID_t speed_pid = {
+	.kp = -0.58,
+	.ki = -0.58/200,
+	.out = 0,
+	.filter = 0.7,
+	.speed = 0  /* 前进 后退 */
+};
 
 /* 转向环 */
-float turn_kd = 0.5;
+TurnPID_t turn_pid = {
+	.kd = 0.5,
+	/* 左右移动 */
+	.kp = -35,
+	.out = 0,
+	.speed = 0 
+};
 
-/* 左右移动 */
-
-float turn_kp = -35;
-float turn_speed = 0;
-
-float angle_out, speed_out, turn_out = 0;
-float PWM_out, PWMA, PWMB = 0;
+float pwm_out, PWMA, PWMB = 0;
 
 /**
  * @brief 系统初始化函数，初始化所有模块和外设
@@ -91,20 +87,20 @@ void System_Init(void)
  */
 void Balance(void)
 {
-	MPU6050_DMP_Get_Data(&Pitch, &Roll, &Yaw);
-	MPU_Get_Gyroscope(&gx, &gy, &gz);
+	MPU6050_DMP_Get_Data(&euler.pitch, &euler.roll, &euler.yaw);
+	MPU_Get_Gyroscope(&gyro.x, &gyro.y, &gyro.z);
 	
-	if (balance_enable) 					// 默认平衡模式
+	if (balance_state.balance_enable) 					// 默认平衡模式
 	{
 		ModeSelect();
 
-		angle_out = angle_pid_control(Med_angle, Pitch, gy);
-		speed_out = speed_pid_control(filter, speed_tar);
-		turn_out = turn_pid_control(gz);
+		upright_pid.out = angle_pid_control(upright_pid.med_angle, euler.pitch, gyro.y);
+		speed_pid.out = speed_pid_control(speed_pid.filter, speed_pid.speed);
+		turn_pid.out = turn_pid_control(gyro.z);
 		
-		PWM_out = angle_out - angle_kp * speed_out;
-		PWMA = PWM_out - turn_out;
-		PWMB = PWM_out + turn_out;
+		pwm_out = upright_pid.out - upright_pid.kp * speed_pid.out;
+		PWMA = pwm_out - turn_pid.out;
+		PWMB = pwm_out + turn_pid.out;
 
 		Limit(PWMA, PWMB);
 		motor_duty(PWMA, PWMB);
@@ -134,25 +130,22 @@ void ModeSelect(void)
 	
 	if(mode == 0) 											//平衡模式
 	{
-		speed_kp = -0.58;
-		speed_ki = -0.58/200;
+		speed_pid.kp = -0.58;
+		speed_pid.ki = -0.58/200;
 		Balance_ON(); 
 	}
 	else Balance_OFF();  
 	if(mode == 1)  //蓝牙遥控模式
 	{
-		speed_kp = -0.55;
-		speed_ki = 0;
+		speed_pid.kp = -0.55;
+		speed_pid.ki = 0;
 		BlueTooth_ON();
 	}
-	else 
-	{
-		BlueTooth_OFF();
-	}
+	else BlueTooth_OFF();
 	if(mode == 2)											// 超声波跟随
 	{
-		speed_kp = -0.5;
-		speed_ki = -0.5/200;
+		speed_pid.kp = -0.5;
+		speed_pid.ki = -0.5/200;
 
 		Follow_ON(); 
 		if(distance > 0 && distance <= 80)
@@ -161,7 +154,7 @@ void ModeSelect(void)
 		}
 		else
 		{
-			speed_tar = 0;  // 停止移动，避免无效距离导致继续前进
+			speed_pid.speed = 0;  // 停止移动，避免无效距离导致继续前进
 		}
 	}
 	else Follow_OFF(); 
@@ -177,14 +170,14 @@ void ModeSelect(void)
 void checkLiftState(void)
 {
     // 拿起条件：角度大且角速度较大，持续一定时间
-    if (fabs(Pitch) > LIFT_ANGLE_THRESHOLD && abs(gy) > LIFT_GYRO_THRESHOLD && Encoder_right > 50)
+    if (fabs(euler.pitch) > LIFT_ANGLE_THRESHOLD && abs(gyro.y) > LIFT_GYRO_THRESHOLD && motor_right.encoder > 50)
 	{
-		lifted_counter++;
-		if (lifted_counter > 30)
+		balance_state.lifted_counter++;
+		if (balance_state.lifted_counter > 30)
 		{
-			lifted_flag = 1;
-			balance_enable = 0;
-			lifted_counter = 0;
+			balance_state.lifted_flag = 1;
+			balance_state.balance_enable = 0;
+			balance_state.lifted_counter = 0;
 			stop();
 		}
 	}
@@ -198,21 +191,21 @@ void checkLiftState(void)
  */
 void detectPutDown(void)
 {
-    if (lifted_flag || stop_flag)
+    if (balance_state.lifted_flag || stop_flag)
     {
-        if (fabs(Pitch) < 20 && abs(gy) < 150 && abs(Encoder_right) < 120)
+        if (fabs(euler.pitch) < 20 && abs(gyro.y) < 150 && abs(motor_right.encoder) < 120)
         {
-            if (putdown_counter++ > PUTDOWN_WAIT_COUNT)
+            if (balance_state.putdown_counter++ > PUTDOWN_WAIT_COUNT)
             {
-				lifted_flag = 0;
-				putdown_counter = 0;
+				balance_state.lifted_flag = 0;
+				balance_state.putdown_counter = 0;
+				balance_state.balance_enable = 1; 
 				stop_flag = 0;           // 清除紧急停止标志
-				balance_enable = 1; 
             }
         }
         else
         {
-            putdown_counter = 0;
+            balance_state.putdown_counter = 0;
         }
     }
 }
@@ -225,9 +218,9 @@ void detectPutDown(void)
  */
 void checkFallDown(void)
 {
-	if (fabs(Med_angle - Pitch) > 70 && stop_flag == 0)			// 倒地检测
+	if (fabs(upright_pid.med_angle - euler.pitch) > 70 && stop_flag == 0)			// 倒地检测
 	{
-		balance_enable = 0;
+		balance_state.balance_enable = 0;
 		stop();
 	}   
 }
@@ -240,52 +233,52 @@ void checkFallDown(void)
  */
 void Bluetooth(void)
 {
-	if(straight || back || left || right)  bluetooth_flag = 1;
+	if(bt_cmd.forward || bt_cmd.backward || bt_cmd.left || bt_cmd.right)  bluetooth_flag = 1;
 	else  bluetooth_flag = 0;
 	/* 蓝牙控制 */
-	if(straight == 1 && back == 0) 		speed_tar+=1;
-	else if(back == 1 && straight == 0) speed_tar-=1;
-	else if(straight == 0 && back == 0) speed_tar = 0;
+	if(bt_cmd.forward == 1 && bt_cmd.backward == 0) 		speed_pid.speed += 1;
+	else if(bt_cmd.backward == 1 && bt_cmd.forward == 0)    speed_pid.speed -= 1;
+	else if(bt_cmd.forward == 0 && bt_cmd.backward == 0) 	speed_pid.speed = 0;
 	
-	if(left == 1 && right == 0)			turn_speed-=1; 
-	else if(right == 1 && left == 0) 	turn_speed+=1;
-	else if(right == 0 && left == 0)	turn_speed = 0; 
+	if(bt_cmd.left == 1 && bt_cmd.right == 0)				speed_pid.speed -= 1; 
+	else if(bt_cmd.right == 1 && bt_cmd.left == 0) 			speed_pid.speed += 1;
+	else if(bt_cmd.left == 0 && bt_cmd.right == 0)			speed_pid.speed = 0; 
 	
-	if(straight && left && back == 0 && right == 0)
+	if(bt_cmd.forward && bt_cmd.left && bt_cmd.backward == 0 && bt_cmd.right == 0)
 	{
-		speed_tar+=0.3;  turn_speed+=1.3; 
+		speed_pid.speed += 0.3;  turn_pid.speed += 1.3; 
 	}
-	else if(straight && right && back == 0 && left == 0)
+	else if(bt_cmd.forward && bt_cmd.right && bt_cmd.backward == 0 && bt_cmd.left == 0)
 	{
-		speed_tar+=0.4;  turn_speed-=1.2;
+		speed_pid.speed += 0.4;  turn_pid.speed -= 1.2;
 	}
-	else if(back && left && straight == 0 && right == 0)
+	else if(bt_cmd.backward && bt_cmd.left && bt_cmd.forward == 0 && bt_cmd.right == 0)
 	{
-		speed_tar-=0.4;	turn_speed+=1.2; 
+		speed_pid.speed -= 0.4;	 turn_pid.speed += 1.2; 
 	}
-	else if(back && right && straight == 0 && left == 0)
+	else if(bt_cmd.backward && bt_cmd.right && bt_cmd.forward == 0 && bt_cmd.left == 0)
 	{
-		speed_tar-=0.2;	turn_speed=1.4;
+		speed_pid.speed -= 0.2;	 turn_pid.speed = 1.4;
 	}
-	if(straight == 0 && back == 0 && left == 0 && right == 0)
+	if(bt_cmd.forward == 0 && bt_cmd.backward == 0 && bt_cmd.left == 0 && bt_cmd.right == 0)
 	{
-		speed_tar = 0; 
-		turn_speed = 0;
+		speed_pid.speed = 0; 
+		turn_pid.speed = 0;
 	}
 	
-	if(speed_tar >= MAX_Speed) 			speed_tar = MAX_Speed;
-	else if(speed_tar <= -MAX_Speed) 	speed_tar = -MAX_Speed;
-	if(turn_speed >= MAX_Turn) 			turn_speed = MAX_Turn;
-	else if(turn_speed <= -MAX_Turn) 	turn_speed = -MAX_Turn;
+	if(speed_pid.speed >= MAX_Speed) 			speed_pid.speed = MAX_Speed;
+	else if(speed_pid.speed <= -MAX_Speed) 	    speed_pid.speed = -MAX_Speed;
+	if(turn_pid.speed >= MAX_Turn) 				turn_pid.speed = MAX_Turn;
+	else if(turn_pid.speed <= -MAX_Turn) 		turn_pid.speed = -MAX_Turn;
 	/* 运动约束 */
 	if (bluetooth_flag)
 	{
-		speed_ki = 0;       // 关闭回原位置积分
-		turn_kd = 0;
+		speed_pid.ki = 0;       // 关闭回原位置积分
+		turn_pid.kd = 0;
 	}
 	else
 	{
-		turn_kd = 0.5;
+		turn_pid.kd = 0.5;
 	}
 }
 
@@ -296,11 +289,11 @@ void Bluetooth(void)
  */
 void SoundLight(void)
 {
-	if(SoundLight_flag == 0)
+	if(sound_light.flag == 0)
 	{
 		Buzzer_ON();
 		Follow_ON();
-		SoundLight_flag = 1;
+		sound_light.flag = 1;
 	}
 }
 
@@ -311,16 +304,16 @@ void SoundLight(void)
  */
 void UpdateSoundLight(void)
 {
-    if(SoundLight_flag)
+    if(sound_light.flag)
     {
-        SoundLight_time++;
+        sound_light.time++;
 
-		if(SoundLight_time >= 20) 
+		if(sound_light.time >= 20) 
 		{
 			Buzzer_OFF();
 			Follow_OFF();
-			SoundLight_time = 0;
-			SoundLight_flag = 0; 
+			sound_light.time = 0;
+			sound_light.flag = 0; 
 		}
         
     }

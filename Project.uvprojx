@@ -769,6 +769,16 @@
               <FileType>5</FileType>
               <FilePath>.\BSP\uart.h</FilePath>
             </File>
+            <File>
+              <FileName>BT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\BSP\BT.c</FilePath>
+            </File>
+            <File>
+              <FileName>BT.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP\BT.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

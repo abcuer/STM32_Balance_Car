@@ -1,12 +1,4 @@
-#include "stm32f10x.h"                  // Device header
-
-int16_t Encoder_left = 0;
-int16_t Encoder_right = 0;
-//int16_t last_Encoder_left = 0;
-//int16_t last_Encoder_right = 0;
-//int16_t EncoderCnt_left = 0;
-//int16_t EncoderCnt_right = 0;
-
+#include "headfile.h"
 
 void encoder_left_Init(void)
 {
@@ -39,7 +31,6 @@ void encoder_left_Init(void)
 	TIM_ICInit(TIM4, &TIM_ICInitStruct);
 
 	TIM_EncoderInterfaceConfig(TIM4,TIM_EncoderMode_TI12,TIM_ICPolarity_Rising,TIM_ICPolarity_Falling);
-	
 	TIM_Cmd(TIM4,ENABLE);
 }
 
@@ -95,6 +86,6 @@ int16_t Encoder_right_Get(void)
 
 void UpdateEncoderCounts(void)
 {
-	Encoder_left = Encoder_left_Get();
-	Encoder_right = Encoder_right_Get();
+	motor_left.encoder = Encoder_left_Get();
+	motor_right.encoder = Encoder_right_Get();
 }

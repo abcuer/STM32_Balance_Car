@@ -50,12 +50,3 @@ void pidout_limit(pid_t *pid)
 	if(pid->out<=-19000)	
 		pid->out=-19000;
 }
-
-void dist_pid_control(void)
-{
-	dist.target = 30;
-	dist.now = distance;
-	pid_cal(&dist);
-	pidout_limit(&dist);
-	speed_tar = dist.out;
-}

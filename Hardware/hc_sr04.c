@@ -4,9 +4,9 @@
 
 float distance_buffer[FILTER_SIZE] = {0};  // 存储历史测距值
 uint8_t filter_index = 0;
-
-
 uint16_t Time; //记录时间
+
+
 void HCSR04_Init(void)
 {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	//开启GPIOA的时钟

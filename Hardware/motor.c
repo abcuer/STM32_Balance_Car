@@ -1,7 +1,13 @@
-#include "stm32f10x.h"                  // Device header
 #include "headfile.h"
 
-uint8_t stop_flag = 0;
+Motor_t motor_left = {
+	.dir = 1,
+	.encoder = 0
+};
+Motor_t motor_right = {
+	.dir = 1,
+	.encoder = 0
+};;
 
 void Motor_Init(void)
 {
@@ -41,32 +47,19 @@ void Speed_R(uint16_t Speed_r)
 	TIM_SetCompare2(TIM3, Speed_r);
 }
 
-//void speed_left_duty(int16_t duty)
-//{
-//	GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) motorA_dir);
-//	GPIO_WriteBit(GPIOA, GPIO_Pin_5, (BitAction) !motorA_dir);
-//	Speed_L(duty);
-//}
-//void speed_right_duty(int16_t duty)
-//{
-//	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) !motorB_dir);
-//	GPIO_WriteBit(GPIOB, GPIO_Pin_1, (BitAction) motorB_dir);
-//	Speed_R(duty);
-//}
-
 void angle_left_duty(int16_t duty) 
 {
 	if(duty >= 0)
 	{
-		motorA_dir = 1;
+		motor_left.dir = 1;
 	}
 	else
 	{
-		motorA_dir = 0;
+		motor_left.dir = 0;
 		duty = -duty;
 	}
-	GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) motorA_dir);
-	GPIO_WriteBit(GPIOA, GPIO_Pin_5, (BitAction) !motorA_dir);
+	GPIO_WriteBit(GPIOA, GPIO_Pin_4, (BitAction) motor_left.dir);
+	GPIO_WriteBit(GPIOA, GPIO_Pin_5, (BitAction) !motor_left.dir);
 	Speed_L(duty);
 }
 
@@ -74,15 +67,15 @@ void angle_right_duty(int16_t duty)
 {
 	if(duty >= 0)
 	{
-		motorB_dir = 1;
+		motor_right.dir = 1;
 	}
 	else
 	{
-		motorB_dir = 0;
+		motor_right.dir = 0;
 		duty = -duty;
 	}
-	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) !motorB_dir);
-	GPIO_WriteBit(GPIOB, GPIO_Pin_1, (BitAction) motorB_dir);
+	GPIO_WriteBit(GPIOB, GPIO_Pin_0, (BitAction) !motor_right.dir);
+	GPIO_WriteBit(GPIOB, GPIO_Pin_1, (BitAction) motor_right.dir);
 	Speed_R(duty);
 }
 void motor_duty(float PWMA, float PWMB)
@@ -91,7 +84,7 @@ void motor_duty(float PWMA, float PWMB)
 	angle_right_duty(PWMB);
 }
 
-
+uint8_t stop_flag = 0;
 void stop(void)
 {
 	stop_flag = 1;  // 立即设置停止标志

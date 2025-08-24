@@ -15,6 +15,9 @@ void angle_right_duty(int16_t duty);
 void motor_duty(float PWMA, float PWMB);
 void stop(void);
 
-
+typedef struct{
+	uint8_t dir;
+	int32_t encoder;
+} Motor_t;
 
 #endif

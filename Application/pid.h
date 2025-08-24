@@ -24,6 +24,5 @@ typedef struct
 void pid_init(pid_t *pid, uint32_t mode, float p, float i, float d);
 void pid_cal(pid_t *pid);
 void pidout_limit(pid_t *pid);
-void dist_pid_control(void);
 
 #endif

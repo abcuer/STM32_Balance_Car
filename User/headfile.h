@@ -10,9 +10,10 @@
 #include "delay.h"
 #include "timer.h"
 #include "sys.h"
-#include "uart.h"
 #include "pwm.h"
 #include "exti.h"
+#include "uart.h"
+#include "BT.h"
 
 #include "led.h"
 #include "key.h"
@@ -28,48 +29,25 @@
 #include "mode.h"
 #include "pid.h"
 
-extern uint8_t motorA_dir;
-extern uint8_t motorB_dir;
-
-extern int16_t Encoder_left;
-extern int16_t Encoder_right;
-
 #define MAX_Speed 24
 #define MAX_Turn 20
-
-extern float Med_angle;
-extern float Pitch;
-extern float Roll;
-extern float Yaw;
-extern short gx;
-extern short gy;
-extern short gz;
-
-extern float angle_kp;
-extern float angle_kd;
-extern float filter;
-extern float speed_kp;
-extern float speed_ki;
-extern float speed_tar;
-
-extern float turn_kd;
-extern float turn_kp;
-extern float turn_speed;
-
-extern uint8_t straight;
-extern uint8_t back;
-extern uint8_t left;
-extern uint8_t right;
-
+/************************ 结构体 *********************/
+extern Motor_t motor_left;
+extern Motor_t motor_right;
+extern UprightPID_t upright_pid;
+extern SpeedPID_t speed_pid;
+extern TurnPID_t turn_pid;
+extern BT_Command_t bt_cmd;
+extern pid_t dist;
+extern BalanceState_t balance_state;
+/************************ 标志位 *********************/
 extern uint8_t stop_flag;
 extern uint8_t bluetooth_flag;
-
+/************************ 全局变量 *********************/
 extern uint16_t Time;
 extern uint16_t distance;
 extern uint8_t mode;
 
-extern uint8_t balance_enable;
-extern pid_t dist;
 
 #endif
 
