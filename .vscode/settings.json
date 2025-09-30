@@ -1,0 +1,22 @@
+{
+    "cortex-debug.armToolchainPath": "D:\\Application\\Work\\MSYS2\\ucrt64\\bin",
+    "cortex-debug.openocdPath": "D:\\Application\\Work\\MSYS2\\ucrt64\\bin\\openocd.EXE",
+    "files.associations": {
+        "string.h": "c",
+        "headfile.h": "c",
+        "stm32f1xx_hal.h": "c",
+        "oled_font.h": "c",
+        "gpio.h": "c",
+        "oled.h": "c",
+        "stdint.h": "c",
+        "mpu6050.h": "c",
+        "inv_mpu_dmp_motion_driver.h": "c",
+        "sys.h": "c",
+        "mpu6050_i2c.h": "c",
+        "stm32f1xx_it.h": "c",
+        "core_sc300.h": "c",
+        "stm32f1xx_hal_conf.h": "c",
+        "iic.h": "c",
+        "inttypes.h": "c"
+    }
+}

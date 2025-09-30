@@ -1,0 +1,1020 @@
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"IIC.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Modules/mpu6050/IIC.c"
+  18              		.section	.text.IIC_Start,"ax",%progbits
+  19              		.align	1
+  20              		.global	IIC_Start
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	IIC_Start:
+  26              	.LFB66:
+   1:Modules/mpu6050/IIC.c **** #include "stm32f1xx_hal.h"
+   2:Modules/mpu6050/IIC.c **** #include "IIC.h"
+   3:Modules/mpu6050/IIC.c **** 
+   4:Modules/mpu6050/IIC.c **** /* 定义IIC总线连接的GPIO端口, 用户只需要修改下面4行代码即可任意改变SCL�
+   5:Modules/mpu6050/IIC.c **** #define GPIO_PORT_IIC     GPIOB                       /* GPIO端口 */
+   6:Modules/mpu6050/IIC.c **** #define RCC_IIC_ENABLE    __HAL_RCC_GPIOB_CLK_ENABLE()       /* GPIO端口时钟 */
+   7:Modules/mpu6050/IIC.c **** #define IIC_SCL_PIN       GPIO_PIN_10                  /* 连接到SCL时钟线的GPIO */
+   8:Modules/mpu6050/IIC.c **** #define IIC_SDA_PIN       GPIO_PIN_11                  /* 连接到SDA数据线的GPIO */
+   9:Modules/mpu6050/IIC.c **** 
+  10:Modules/mpu6050/IIC.c **** /* 定义读写SCL和SDA的宏，已增加代码的可移植性和可阅读性 */
+  11:Modules/mpu6050/IIC.c **** #if 1	/* 条件编译： 1 选择GPIO的库函数实现IO读写 */
+  12:Modules/mpu6050/IIC.c **** #define IIC_SCL_1()  HAL_GPIO_WritePin(GPIO_PORT_IIC, IIC_SCL_PIN, GPIO_PIN_SET)		/* SCL = 1 */
+  13:Modules/mpu6050/IIC.c **** #define IIC_SCL_0()  HAL_GPIO_WritePin(GPIO_PORT_IIC, IIC_SCL_PIN, GPIO_PIN_RESET)		/* SCL = 0 */
+  14:Modules/mpu6050/IIC.c **** 
+  15:Modules/mpu6050/IIC.c **** #define IIC_SDA_1()  HAL_GPIO_WritePin(GPIO_PORT_IIC, IIC_SDA_PIN, GPIO_PIN_SET)		/* SDA = 1 */
+  16:Modules/mpu6050/IIC.c **** #define IIC_SDA_0()  HAL_GPIO_WritePin(GPIO_PORT_IIC, IIC_SDA_PIN, GPIO_PIN_RESET)		/* SDA = 0 */
+  17:Modules/mpu6050/IIC.c **** 
+  18:Modules/mpu6050/IIC.c **** #define IIC_SDA_READ()  HAL_GPIO_ReadPin(GPIO_PORT_IIC, IIC_SDA_PIN)	/* 读SDA口线状态 */
+  19:Modules/mpu6050/IIC.c **** #else	/* 这个分支选择直接寄存器操作实现IO读写 */
+  20:Modules/mpu6050/IIC.c **** /*　注意：如下写法，在IAR最高级别优化时，会被编译器错误优化 */
+  21:Modules/mpu6050/IIC.c **** #define IIC_SCL_1()  GPIO_PORT_IIC->BSRR = IIC_SCL_PIN				/* SCL = 1 */
+  22:Modules/mpu6050/IIC.c **** #define IIC_SCL_0()  GPIO_PORT_IIC->BRR = IIC_SCL_PIN				/* SCL = 0 */
+  23:Modules/mpu6050/IIC.c **** 
+  24:Modules/mpu6050/IIC.c **** #define IIC_SDA_1()  GPIO_PORT_IIC->BSRR = IIC_SDA_PIN				/* SDA = 1 */
+  25:Modules/mpu6050/IIC.c **** #define IIC_SDA_0()  GPIO_PORT_IIC->BRR = IIC_SDA_PIN				/* SDA = 0 */
+  26:Modules/mpu6050/IIC.c **** 
+  27:Modules/mpu6050/IIC.c **** #define IIC_SDA_READ()  ((GPIO_PORT_IIC->IDR & IIC_SDA_PIN) != 0)	/* 读SDA口线状态 */
+  28:Modules/mpu6050/IIC.c **** #endif
+  29:Modules/mpu6050/IIC.c **** 
+  30:Modules/mpu6050/IIC.c **** void IIC_GPIO_Init(void);
+  31:Modules/mpu6050/IIC.c **** 
+  32:Modules/mpu6050/IIC.c **** /*
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 2
+
+
+  33:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  34:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_Delay
+  35:Modules/mpu6050/IIC.c **** *	功能说明: IIC总线位延迟，最快400KHz
+  36:Modules/mpu6050/IIC.c **** *	形    参：无
+  37:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+  38:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  39:Modules/mpu6050/IIC.c **** */
+  40:Modules/mpu6050/IIC.c **** static void IIC_Delay(void)
+  41:Modules/mpu6050/IIC.c **** {
+  42:Modules/mpu6050/IIC.c ****     uint8_t i;
+  43:Modules/mpu6050/IIC.c **** 
+  44:Modules/mpu6050/IIC.c ****     /*　
+  45:Modules/mpu6050/IIC.c ****      	下面的时间是通过安富莱AX-Pro逻辑分析仪测试得到的。
+  46:Modules/mpu6050/IIC.c ****     	CPU主频72MHz时，在内部Flash运行, MDK工程不优化
+  47:Modules/mpu6050/IIC.c ****     	循环次数为10时，SCL频率 = 205KHz
+  48:Modules/mpu6050/IIC.c ****     	循环次数为7时，SCL频率 = 347KHz， SCL高电平时间1.5us，SCL低电平时间2.87us
+  49:Modules/mpu6050/IIC.c ****      	循环次数为5时，SCL频率 = 421KHz， SCL高电平时间1.25us，SCL低电平时间2.37
+  50:Modules/mpu6050/IIC.c **** 
+  51:Modules/mpu6050/IIC.c ****     IAR工程编译效率高，不能设置为7
+  52:Modules/mpu6050/IIC.c ****     */
+  53:Modules/mpu6050/IIC.c ****     for (i = 0; i < 10; i++);
+  54:Modules/mpu6050/IIC.c **** }
+  55:Modules/mpu6050/IIC.c **** 
+  56:Modules/mpu6050/IIC.c **** /*
+  57:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  58:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_Start
+  59:Modules/mpu6050/IIC.c **** *	功能说明: CPU发起IIC总线启动信号
+  60:Modules/mpu6050/IIC.c **** *	形    参：无
+  61:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+  62:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  63:Modules/mpu6050/IIC.c **** */
+  64:Modules/mpu6050/IIC.c **** void IIC_Start(void)
+  65:Modules/mpu6050/IIC.c **** {
+  27              		.loc 1 65 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 10B5     		push	{r4, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 4, -8
+  35              		.cfi_offset 14, -4
+  66:Modules/mpu6050/IIC.c ****     /* 当SCL高电平时，SDA出现一个下跳沿表示IIC总线启动信号 */
+  67:Modules/mpu6050/IIC.c ****     IIC_SDA_1();
+  36              		.loc 1 67 5 view .LVU1
+  37 0002 0D4C     		ldr	r4, .L3
+  38 0004 0122     		movs	r2, #1
+  39 0006 4FF40061 		mov	r1, #2048
+  40 000a 2046     		mov	r0, r4
+  41 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+  42              	.LVL0:
+  68:Modules/mpu6050/IIC.c ****     IIC_SCL_1();
+  43              		.loc 1 68 5 view .LVU2
+  44 0010 0122     		movs	r2, #1
+  45 0012 4FF48061 		mov	r1, #1024
+  46 0016 2046     		mov	r0, r4
+  47 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 3
+
+
+  48              	.LVL1:
+  69:Modules/mpu6050/IIC.c ****     IIC_Delay();
+  49              		.loc 1 69 5 view .LVU3
+  70:Modules/mpu6050/IIC.c ****     IIC_SDA_0();
+  50              		.loc 1 70 5 view .LVU4
+  51 001c 0022     		movs	r2, #0
+  52 001e 4FF40061 		mov	r1, #2048
+  53 0022 2046     		mov	r0, r4
+  54 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  55              	.LVL2:
+  71:Modules/mpu6050/IIC.c ****     IIC_Delay();
+  56              		.loc 1 71 5 view .LVU5
+  72:Modules/mpu6050/IIC.c ****     IIC_SCL_0();
+  57              		.loc 1 72 5 view .LVU6
+  58 0028 0022     		movs	r2, #0
+  59 002a 4FF48061 		mov	r1, #1024
+  60 002e 2046     		mov	r0, r4
+  61 0030 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  62              	.LVL3:
+  73:Modules/mpu6050/IIC.c ****     IIC_Delay();
+  63              		.loc 1 73 5 view .LVU7
+  74:Modules/mpu6050/IIC.c **** }
+  64              		.loc 1 74 1 is_stmt 0 view .LVU8
+  65 0034 10BD     		pop	{r4, pc}
+  66              	.L4:
+  67 0036 00BF     		.align	2
+  68              	.L3:
+  69 0038 000C0140 		.word	1073810432
+  70              		.cfi_endproc
+  71              	.LFE66:
+  73              		.section	.text.IIC_Stop,"ax",%progbits
+  74              		.align	1
+  75              		.global	IIC_Stop
+  76              		.syntax unified
+  77              		.thumb
+  78              		.thumb_func
+  80              	IIC_Stop:
+  81              	.LFB67:
+  75:Modules/mpu6050/IIC.c **** 
+  76:Modules/mpu6050/IIC.c **** /*
+  77:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  78:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_Start
+  79:Modules/mpu6050/IIC.c **** *	功能说明: CPU发起IIC总线停止信号
+  80:Modules/mpu6050/IIC.c **** *	形    参：无
+  81:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+  82:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  83:Modules/mpu6050/IIC.c **** */
+  84:Modules/mpu6050/IIC.c **** void IIC_Stop(void)
+  85:Modules/mpu6050/IIC.c **** {
+  82              		.loc 1 85 1 is_stmt 1 view -0
+  83              		.cfi_startproc
+  84              		@ args = 0, pretend = 0, frame = 0
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86 0000 10B5     		push	{r4, lr}
+  87              	.LCFI1:
+  88              		.cfi_def_cfa_offset 8
+  89              		.cfi_offset 4, -8
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 4
+
+
+  90              		.cfi_offset 14, -4
+  86:Modules/mpu6050/IIC.c ****     /* 当SCL高电平时，SDA出现一个上跳沿表示IIC总线停止信号 */
+  87:Modules/mpu6050/IIC.c ****     IIC_SDA_0();
+  91              		.loc 1 87 5 view .LVU10
+  92 0002 0A4C     		ldr	r4, .L7
+  93 0004 0022     		movs	r2, #0
+  94 0006 4FF40061 		mov	r1, #2048
+  95 000a 2046     		mov	r0, r4
+  96 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+  97              	.LVL4:
+  88:Modules/mpu6050/IIC.c ****     IIC_SCL_1();
+  98              		.loc 1 88 5 view .LVU11
+  99 0010 0122     		movs	r2, #1
+ 100 0012 4FF48061 		mov	r1, #1024
+ 101 0016 2046     		mov	r0, r4
+ 102 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 103              	.LVL5:
+  89:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 104              		.loc 1 89 5 view .LVU12
+  90:Modules/mpu6050/IIC.c ****     IIC_SDA_1();
+ 105              		.loc 1 90 5 view .LVU13
+ 106 001c 0122     		movs	r2, #1
+ 107 001e 4FF40061 		mov	r1, #2048
+ 108 0022 2046     		mov	r0, r4
+ 109 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 110              	.LVL6:
+  91:Modules/mpu6050/IIC.c **** }
+ 111              		.loc 1 91 1 is_stmt 0 view .LVU14
+ 112 0028 10BD     		pop	{r4, pc}
+ 113              	.L8:
+ 114 002a 00BF     		.align	2
+ 115              	.L7:
+ 116 002c 000C0140 		.word	1073810432
+ 117              		.cfi_endproc
+ 118              	.LFE67:
+ 120              		.section	.text.IIC_Send_Byte,"ax",%progbits
+ 121              		.align	1
+ 122              		.global	IIC_Send_Byte
+ 123              		.syntax unified
+ 124              		.thumb
+ 125              		.thumb_func
+ 127              	IIC_Send_Byte:
+ 128              	.LVL7:
+ 129              	.LFB68:
+  92:Modules/mpu6050/IIC.c **** 
+  93:Modules/mpu6050/IIC.c **** /*
+  94:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+  95:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_SendByte
+  96:Modules/mpu6050/IIC.c **** *	功能说明: CPU向IIC总线设备发送8bit数据
+  97:Modules/mpu6050/IIC.c **** *	形    参：_ucByte ： 等待发送的字节
+  98:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+  99:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 100:Modules/mpu6050/IIC.c **** */
+ 101:Modules/mpu6050/IIC.c **** void IIC_Send_Byte(uint8_t _ucByte)
+ 102:Modules/mpu6050/IIC.c **** {
+ 130              		.loc 1 102 1 is_stmt 1 view -0
+ 131              		.cfi_startproc
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 5
+
+
+ 132              		@ args = 0, pretend = 0, frame = 0
+ 133              		@ frame_needed = 0, uses_anonymous_args = 0
+ 134              		.loc 1 102 1 is_stmt 0 view .LVU16
+ 135 0000 70B5     		push	{r4, r5, r6, lr}
+ 136              	.LCFI2:
+ 137              		.cfi_def_cfa_offset 16
+ 138              		.cfi_offset 4, -16
+ 139              		.cfi_offset 5, -12
+ 140              		.cfi_offset 6, -8
+ 141              		.cfi_offset 14, -4
+ 142 0002 0546     		mov	r5, r0
+ 103:Modules/mpu6050/IIC.c ****     uint8_t i;
+ 143              		.loc 1 103 5 is_stmt 1 view .LVU17
+ 104:Modules/mpu6050/IIC.c **** 
+ 105:Modules/mpu6050/IIC.c ****     /* 先发送字节的高位bit7 */
+ 106:Modules/mpu6050/IIC.c ****     for (i = 0; i < 8; i++)
+ 144              		.loc 1 106 5 view .LVU18
+ 145              	.LVL8:
+ 146              		.loc 1 106 12 is_stmt 0 view .LVU19
+ 147 0004 0024     		movs	r4, #0
+ 148              		.loc 1 106 5 view .LVU20
+ 149 0006 18E0     		b	.L10
+ 150              	.LVL9:
+ 151              	.L18:
+ 107:Modules/mpu6050/IIC.c ****     {
+ 108:Modules/mpu6050/IIC.c ****         if (_ucByte & 0x80)
+ 109:Modules/mpu6050/IIC.c ****         {
+ 110:Modules/mpu6050/IIC.c ****             IIC_SDA_1();
+ 152              		.loc 1 110 13 is_stmt 1 view .LVU21
+ 153 0008 0122     		movs	r2, #1
+ 154 000a 4FF40061 		mov	r1, #2048
+ 155 000e 1548     		ldr	r0, .L19
+ 156 0010 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 157              	.LVL10:
+ 158              	.L12:
+ 111:Modules/mpu6050/IIC.c ****         }
+ 112:Modules/mpu6050/IIC.c ****         else
+ 113:Modules/mpu6050/IIC.c ****         {
+ 114:Modules/mpu6050/IIC.c ****             IIC_SDA_0();
+ 115:Modules/mpu6050/IIC.c ****         }
+ 116:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 159              		.loc 1 116 9 view .LVU22
+ 117:Modules/mpu6050/IIC.c ****         IIC_SCL_1();
+ 160              		.loc 1 117 9 view .LVU23
+ 161 0014 134E     		ldr	r6, .L19
+ 162 0016 0122     		movs	r2, #1
+ 163 0018 4FF48061 		mov	r1, #1024
+ 164 001c 3046     		mov	r0, r6
+ 165 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 166              	.LVL11:
+ 118:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 167              		.loc 1 118 9 view .LVU24
+ 119:Modules/mpu6050/IIC.c ****         IIC_SCL_0();
+ 168              		.loc 1 119 9 view .LVU25
+ 169 0022 0022     		movs	r2, #0
+ 170 0024 4FF48061 		mov	r1, #1024
+ 171 0028 3046     		mov	r0, r6
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 6
+
+
+ 172 002a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 173              	.LVL12:
+ 120:Modules/mpu6050/IIC.c ****         if (i == 7)
+ 174              		.loc 1 120 9 view .LVU26
+ 175              		.loc 1 120 12 is_stmt 0 view .LVU27
+ 176 002e 072C     		cmp	r4, #7
+ 177 0030 0FD0     		beq	.L16
+ 178              	.L13:
+ 121:Modules/mpu6050/IIC.c ****         {
+ 122:Modules/mpu6050/IIC.c ****             IIC_SDA_1(); // 释放总线
+ 123:Modules/mpu6050/IIC.c ****         }
+ 124:Modules/mpu6050/IIC.c ****         _ucByte <<= 1;	/* 左移一个bit */
+ 179              		.loc 1 124 9 is_stmt 1 view .LVU28
+ 180              		.loc 1 124 17 is_stmt 0 view .LVU29
+ 181 0032 6D00     		lsls	r5, r5, #1
+ 182              	.LVL13:
+ 183              		.loc 1 124 17 view .LVU30
+ 184 0034 EDB2     		uxtb	r5, r5
+ 185              	.LVL14:
+ 125:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 186              		.loc 1 125 9 is_stmt 1 view .LVU31
+ 106:Modules/mpu6050/IIC.c ****     {
+ 187              		.loc 1 106 25 discriminator 2 view .LVU32
+ 188 0036 0134     		adds	r4, r4, #1
+ 189              	.LVL15:
+ 106:Modules/mpu6050/IIC.c ****     {
+ 190              		.loc 1 106 25 is_stmt 0 discriminator 2 view .LVU33
+ 191 0038 E4B2     		uxtb	r4, r4
+ 192              	.LVL16:
+ 193              	.L10:
+ 106:Modules/mpu6050/IIC.c ****     {
+ 194              		.loc 1 106 19 is_stmt 1 discriminator 1 view .LVU34
+ 195 003a 072C     		cmp	r4, #7
+ 196 003c 10D8     		bhi	.L17
+ 108:Modules/mpu6050/IIC.c ****         {
+ 197              		.loc 1 108 9 view .LVU35
+ 108:Modules/mpu6050/IIC.c ****         {
+ 198              		.loc 1 108 12 is_stmt 0 view .LVU36
+ 199 003e 15F0800F 		tst	r5, #128
+ 200 0042 E1D1     		bne	.L18
+ 114:Modules/mpu6050/IIC.c ****         }
+ 201              		.loc 1 114 13 is_stmt 1 view .LVU37
+ 202 0044 0022     		movs	r2, #0
+ 203 0046 4FF40061 		mov	r1, #2048
+ 204 004a 0648     		ldr	r0, .L19
+ 205 004c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 206              	.LVL17:
+ 207 0050 E0E7     		b	.L12
+ 208              	.L16:
+ 122:Modules/mpu6050/IIC.c ****         }
+ 209              		.loc 1 122 13 view .LVU38
+ 210 0052 0122     		movs	r2, #1
+ 211 0054 4FF40061 		mov	r1, #2048
+ 212 0058 3046     		mov	r0, r6
+ 213 005a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 214              	.LVL18:
+ 215 005e E8E7     		b	.L13
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 7
+
+
+ 216              	.L17:
+ 126:Modules/mpu6050/IIC.c ****     }
+ 127:Modules/mpu6050/IIC.c **** }
+ 217              		.loc 1 127 1 is_stmt 0 view .LVU39
+ 218 0060 70BD     		pop	{r4, r5, r6, pc}
+ 219              	.LVL19:
+ 220              	.L20:
+ 221              		.loc 1 127 1 view .LVU40
+ 222 0062 00BF     		.align	2
+ 223              	.L19:
+ 224 0064 000C0140 		.word	1073810432
+ 225              		.cfi_endproc
+ 226              	.LFE68:
+ 228              		.section	.text.IIC_Wait_Ack,"ax",%progbits
+ 229              		.align	1
+ 230              		.global	IIC_Wait_Ack
+ 231              		.syntax unified
+ 232              		.thumb
+ 233              		.thumb_func
+ 235              	IIC_Wait_Ack:
+ 236              	.LFB70:
+ 128:Modules/mpu6050/IIC.c **** 
+ 129:Modules/mpu6050/IIC.c **** /*
+ 130:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 131:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_ReadByte
+ 132:Modules/mpu6050/IIC.c **** *	功能说明: CPU从IIC总线设备读取8bit数据
+ 133:Modules/mpu6050/IIC.c **** *	形    参：无
+ 134:Modules/mpu6050/IIC.c **** *	返 回 值: 读到的数据
+ 135:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 136:Modules/mpu6050/IIC.c **** */
+ 137:Modules/mpu6050/IIC.c **** uint8_t IIC_Read_Byte(uint8_t ack)
+ 138:Modules/mpu6050/IIC.c **** {
+ 139:Modules/mpu6050/IIC.c ****     uint8_t i;
+ 140:Modules/mpu6050/IIC.c ****     uint8_t value;
+ 141:Modules/mpu6050/IIC.c **** 
+ 142:Modules/mpu6050/IIC.c ****     /* 读到第1个bit为数据的bit7 */
+ 143:Modules/mpu6050/IIC.c ****     value = 0;
+ 144:Modules/mpu6050/IIC.c ****     for (i = 0; i < 8; i++)
+ 145:Modules/mpu6050/IIC.c ****     {
+ 146:Modules/mpu6050/IIC.c ****         value <<= 1;
+ 147:Modules/mpu6050/IIC.c ****         IIC_SCL_1();
+ 148:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 149:Modules/mpu6050/IIC.c ****         if (IIC_SDA_READ())
+ 150:Modules/mpu6050/IIC.c ****         {
+ 151:Modules/mpu6050/IIC.c ****             value++;
+ 152:Modules/mpu6050/IIC.c ****         }
+ 153:Modules/mpu6050/IIC.c ****         IIC_SCL_0();
+ 154:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 155:Modules/mpu6050/IIC.c ****     }
+ 156:Modules/mpu6050/IIC.c ****     if(ack==0)
+ 157:Modules/mpu6050/IIC.c ****         IIC_NAck();
+ 158:Modules/mpu6050/IIC.c ****     else
+ 159:Modules/mpu6050/IIC.c ****         IIC_Ack();
+ 160:Modules/mpu6050/IIC.c ****     return value;
+ 161:Modules/mpu6050/IIC.c **** }
+ 162:Modules/mpu6050/IIC.c **** 
+ 163:Modules/mpu6050/IIC.c **** /*
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 8
+
+
+ 164:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 165:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_WaitAck
+ 166:Modules/mpu6050/IIC.c **** *	功能说明: CPU产生一个时钟，并读取器件的ACK应答信号
+ 167:Modules/mpu6050/IIC.c **** *	形    参：无
+ 168:Modules/mpu6050/IIC.c **** *	返 回 值: 返回0表示正确应答，1表示无器件响应
+ 169:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 170:Modules/mpu6050/IIC.c **** */
+ 171:Modules/mpu6050/IIC.c **** uint8_t IIC_Wait_Ack(void)
+ 172:Modules/mpu6050/IIC.c **** {
+ 237              		.loc 1 172 1 is_stmt 1 view -0
+ 238              		.cfi_startproc
+ 239              		@ args = 0, pretend = 0, frame = 0
+ 240              		@ frame_needed = 0, uses_anonymous_args = 0
+ 241 0000 10B5     		push	{r4, lr}
+ 242              	.LCFI3:
+ 243              		.cfi_def_cfa_offset 8
+ 244              		.cfi_offset 4, -8
+ 245              		.cfi_offset 14, -4
+ 173:Modules/mpu6050/IIC.c ****     uint8_t re;
+ 246              		.loc 1 173 5 view .LVU42
+ 174:Modules/mpu6050/IIC.c **** 
+ 175:Modules/mpu6050/IIC.c ****     IIC_SDA_1();	/* CPU释放SDA总线 */
+ 247              		.loc 1 175 5 view .LVU43
+ 248 0002 0E4C     		ldr	r4, .L24
+ 249 0004 0122     		movs	r2, #1
+ 250 0006 4FF40061 		mov	r1, #2048
+ 251 000a 2046     		mov	r0, r4
+ 252 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 253              	.LVL20:
+ 176:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 254              		.loc 1 176 5 view .LVU44
+ 177:Modules/mpu6050/IIC.c ****     IIC_SCL_1();	/* CPU驱动SCL = 1, 此时器件会返回ACK应答 */
+ 255              		.loc 1 177 5 view .LVU45
+ 256 0010 0122     		movs	r2, #1
+ 257 0012 4FF48061 		mov	r1, #1024
+ 258 0016 2046     		mov	r0, r4
+ 259 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 260              	.LVL21:
+ 178:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 261              		.loc 1 178 5 view .LVU46
+ 179:Modules/mpu6050/IIC.c ****     if (IIC_SDA_READ())	/* CPU读取SDA口线状态 */
+ 262              		.loc 1 179 5 view .LVU47
+ 263              		.loc 1 179 9 is_stmt 0 view .LVU48
+ 264 001c 4FF40061 		mov	r1, #2048
+ 265 0020 2046     		mov	r0, r4
+ 266 0022 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 267              	.LVL22:
+ 268              		.loc 1 179 8 discriminator 1 view .LVU49
+ 269 0026 0446     		mov	r4, r0
+ 270 0028 00B1     		cbz	r0, .L22
+ 180:Modules/mpu6050/IIC.c ****     {
+ 181:Modules/mpu6050/IIC.c ****         re = 1;
+ 271              		.loc 1 181 12 view .LVU50
+ 272 002a 0124     		movs	r4, #1
+ 273              	.L22:
+ 274              	.LVL23:
+ 182:Modules/mpu6050/IIC.c ****     }
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 9
+
+
+ 183:Modules/mpu6050/IIC.c ****     else
+ 184:Modules/mpu6050/IIC.c ****     {
+ 185:Modules/mpu6050/IIC.c ****         re = 0;
+ 186:Modules/mpu6050/IIC.c ****     }
+ 187:Modules/mpu6050/IIC.c ****     IIC_SCL_0();
+ 275              		.loc 1 187 5 is_stmt 1 view .LVU51
+ 276 002c 0022     		movs	r2, #0
+ 277 002e 4FF48061 		mov	r1, #1024
+ 278 0032 0248     		ldr	r0, .L24
+ 279 0034 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 280              	.LVL24:
+ 188:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 281              		.loc 1 188 5 view .LVU52
+ 189:Modules/mpu6050/IIC.c ****     return re;
+ 282              		.loc 1 189 5 view .LVU53
+ 190:Modules/mpu6050/IIC.c **** }
+ 283              		.loc 1 190 1 is_stmt 0 view .LVU54
+ 284 0038 2046     		mov	r0, r4
+ 285 003a 10BD     		pop	{r4, pc}
+ 286              	.LVL25:
+ 287              	.L25:
+ 288              		.loc 1 190 1 view .LVU55
+ 289              		.align	2
+ 290              	.L24:
+ 291 003c 000C0140 		.word	1073810432
+ 292              		.cfi_endproc
+ 293              	.LFE70:
+ 295              		.section	.text.IIC_Ack,"ax",%progbits
+ 296              		.align	1
+ 297              		.global	IIC_Ack
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 302              	IIC_Ack:
+ 303              	.LFB71:
+ 191:Modules/mpu6050/IIC.c **** 
+ 192:Modules/mpu6050/IIC.c **** /*
+ 193:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 194:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_Ack
+ 195:Modules/mpu6050/IIC.c **** *	功能说明: CPU产生一个ACK信号
+ 196:Modules/mpu6050/IIC.c **** *	形    参：无
+ 197:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+ 198:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 199:Modules/mpu6050/IIC.c **** */
+ 200:Modules/mpu6050/IIC.c **** void IIC_Ack(void)
+ 201:Modules/mpu6050/IIC.c **** {
+ 304              		.loc 1 201 1 is_stmt 1 view -0
+ 305              		.cfi_startproc
+ 306              		@ args = 0, pretend = 0, frame = 0
+ 307              		@ frame_needed = 0, uses_anonymous_args = 0
+ 308 0000 10B5     		push	{r4, lr}
+ 309              	.LCFI4:
+ 310              		.cfi_def_cfa_offset 8
+ 311              		.cfi_offset 4, -8
+ 312              		.cfi_offset 14, -4
+ 202:Modules/mpu6050/IIC.c ****     IIC_SDA_0();	/* CPU驱动SDA = 0 */
+ 313              		.loc 1 202 5 view .LVU57
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 10
+
+
+ 314 0002 0D4C     		ldr	r4, .L28
+ 315 0004 0022     		movs	r2, #0
+ 316 0006 4FF40061 		mov	r1, #2048
+ 317 000a 2046     		mov	r0, r4
+ 318 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 319              	.LVL26:
+ 203:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 320              		.loc 1 203 5 view .LVU58
+ 204:Modules/mpu6050/IIC.c ****     IIC_SCL_1();	/* CPU产生1个时钟 */
+ 321              		.loc 1 204 5 view .LVU59
+ 322 0010 0122     		movs	r2, #1
+ 323 0012 4FF48061 		mov	r1, #1024
+ 324 0016 2046     		mov	r0, r4
+ 325 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 326              	.LVL27:
+ 205:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 327              		.loc 1 205 5 view .LVU60
+ 206:Modules/mpu6050/IIC.c ****     IIC_SCL_0();
+ 328              		.loc 1 206 5 view .LVU61
+ 329 001c 0022     		movs	r2, #0
+ 330 001e 4FF48061 		mov	r1, #1024
+ 331 0022 2046     		mov	r0, r4
+ 332 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 333              	.LVL28:
+ 207:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 334              		.loc 1 207 5 view .LVU62
+ 208:Modules/mpu6050/IIC.c ****     IIC_SDA_1();	/* CPU释放SDA总线 */
+ 335              		.loc 1 208 5 view .LVU63
+ 336 0028 0122     		movs	r2, #1
+ 337 002a 4FF40061 		mov	r1, #2048
+ 338 002e 2046     		mov	r0, r4
+ 339 0030 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 340              	.LVL29:
+ 209:Modules/mpu6050/IIC.c **** }
+ 341              		.loc 1 209 1 is_stmt 0 view .LVU64
+ 342 0034 10BD     		pop	{r4, pc}
+ 343              	.L29:
+ 344 0036 00BF     		.align	2
+ 345              	.L28:
+ 346 0038 000C0140 		.word	1073810432
+ 347              		.cfi_endproc
+ 348              	.LFE71:
+ 350              		.section	.text.IIC_NAck,"ax",%progbits
+ 351              		.align	1
+ 352              		.global	IIC_NAck
+ 353              		.syntax unified
+ 354              		.thumb
+ 355              		.thumb_func
+ 357              	IIC_NAck:
+ 358              	.LFB72:
+ 210:Modules/mpu6050/IIC.c **** 
+ 211:Modules/mpu6050/IIC.c **** /*
+ 212:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 213:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_NAck
+ 214:Modules/mpu6050/IIC.c **** *	功能说明: CPU产生1个NACK信号
+ 215:Modules/mpu6050/IIC.c **** *	形    参：无
+ 216:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 11
+
+
+ 217:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 218:Modules/mpu6050/IIC.c **** */
+ 219:Modules/mpu6050/IIC.c **** void IIC_NAck(void)
+ 220:Modules/mpu6050/IIC.c **** {
+ 359              		.loc 1 220 1 is_stmt 1 view -0
+ 360              		.cfi_startproc
+ 361              		@ args = 0, pretend = 0, frame = 0
+ 362              		@ frame_needed = 0, uses_anonymous_args = 0
+ 363 0000 10B5     		push	{r4, lr}
+ 364              	.LCFI5:
+ 365              		.cfi_def_cfa_offset 8
+ 366              		.cfi_offset 4, -8
+ 367              		.cfi_offset 14, -4
+ 221:Modules/mpu6050/IIC.c ****     IIC_SDA_1();	/* CPU驱动SDA = 1 */
+ 368              		.loc 1 221 5 view .LVU66
+ 369 0002 0A4C     		ldr	r4, .L32
+ 370 0004 0122     		movs	r2, #1
+ 371 0006 4FF40061 		mov	r1, #2048
+ 372 000a 2046     		mov	r0, r4
+ 373 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 374              	.LVL30:
+ 222:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 375              		.loc 1 222 5 view .LVU67
+ 223:Modules/mpu6050/IIC.c ****     IIC_SCL_1();	/* CPU产生1个时钟 */
+ 376              		.loc 1 223 5 view .LVU68
+ 377 0010 0122     		movs	r2, #1
+ 378 0012 4FF48061 		mov	r1, #1024
+ 379 0016 2046     		mov	r0, r4
+ 380 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 381              	.LVL31:
+ 224:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 382              		.loc 1 224 5 view .LVU69
+ 225:Modules/mpu6050/IIC.c ****     IIC_SCL_0();
+ 383              		.loc 1 225 5 view .LVU70
+ 384 001c 0022     		movs	r2, #0
+ 385 001e 4FF48061 		mov	r1, #1024
+ 386 0022 2046     		mov	r0, r4
+ 387 0024 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 388              	.LVL32:
+ 226:Modules/mpu6050/IIC.c ****     IIC_Delay();
+ 389              		.loc 1 226 5 view .LVU71
+ 227:Modules/mpu6050/IIC.c **** }
+ 390              		.loc 1 227 1 is_stmt 0 view .LVU72
+ 391 0028 10BD     		pop	{r4, pc}
+ 392              	.L33:
+ 393 002a 00BF     		.align	2
+ 394              	.L32:
+ 395 002c 000C0140 		.word	1073810432
+ 396              		.cfi_endproc
+ 397              	.LFE72:
+ 399              		.section	.text.IIC_Read_Byte,"ax",%progbits
+ 400              		.align	1
+ 401              		.global	IIC_Read_Byte
+ 402              		.syntax unified
+ 403              		.thumb
+ 404              		.thumb_func
+ 406              	IIC_Read_Byte:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 12
+
+
+ 407              	.LVL33:
+ 408              	.LFB69:
+ 138:Modules/mpu6050/IIC.c ****     uint8_t i;
+ 409              		.loc 1 138 1 is_stmt 1 view -0
+ 410              		.cfi_startproc
+ 411              		@ args = 0, pretend = 0, frame = 0
+ 412              		@ frame_needed = 0, uses_anonymous_args = 0
+ 138:Modules/mpu6050/IIC.c ****     uint8_t i;
+ 413              		.loc 1 138 1 is_stmt 0 view .LVU74
+ 414 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 415              	.LCFI6:
+ 416              		.cfi_def_cfa_offset 24
+ 417              		.cfi_offset 3, -24
+ 418              		.cfi_offset 4, -20
+ 419              		.cfi_offset 5, -16
+ 420              		.cfi_offset 6, -12
+ 421              		.cfi_offset 7, -8
+ 422              		.cfi_offset 14, -4
+ 423 0002 0746     		mov	r7, r0
+ 139:Modules/mpu6050/IIC.c ****     uint8_t value;
+ 424              		.loc 1 139 5 is_stmt 1 view .LVU75
+ 140:Modules/mpu6050/IIC.c **** 
+ 425              		.loc 1 140 5 view .LVU76
+ 143:Modules/mpu6050/IIC.c ****     for (i = 0; i < 8; i++)
+ 426              		.loc 1 143 5 view .LVU77
+ 427              	.LVL34:
+ 144:Modules/mpu6050/IIC.c ****     {
+ 428              		.loc 1 144 5 view .LVU78
+ 143:Modules/mpu6050/IIC.c ****     for (i = 0; i < 8; i++)
+ 429              		.loc 1 143 11 is_stmt 0 view .LVU79
+ 430 0004 0024     		movs	r4, #0
+ 144:Modules/mpu6050/IIC.c ****     {
+ 431              		.loc 1 144 12 view .LVU80
+ 432 0006 2546     		mov	r5, r4
+ 144:Modules/mpu6050/IIC.c ****     {
+ 433              		.loc 1 144 5 view .LVU81
+ 434 0008 07E0     		b	.L35
+ 435              	.LVL35:
+ 436              	.L36:
+ 153:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 437              		.loc 1 153 9 is_stmt 1 view .LVU82
+ 438 000a 0022     		movs	r2, #0
+ 439 000c 4FF48061 		mov	r1, #1024
+ 440 0010 1048     		ldr	r0, .L42
+ 441 0012 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 442              	.LVL36:
+ 154:Modules/mpu6050/IIC.c ****     }
+ 443              		.loc 1 154 9 view .LVU83
+ 144:Modules/mpu6050/IIC.c ****     {
+ 444              		.loc 1 144 25 discriminator 2 view .LVU84
+ 445 0016 0135     		adds	r5, r5, #1
+ 446              	.LVL37:
+ 144:Modules/mpu6050/IIC.c ****     {
+ 447              		.loc 1 144 25 is_stmt 0 discriminator 2 view .LVU85
+ 448 0018 EDB2     		uxtb	r5, r5
+ 449              	.LVL38:
+ 450              	.L35:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 13
+
+
+ 144:Modules/mpu6050/IIC.c ****     {
+ 451              		.loc 1 144 19 is_stmt 1 discriminator 1 view .LVU86
+ 452 001a 072D     		cmp	r5, #7
+ 453 001c 12D8     		bhi	.L41
+ 146:Modules/mpu6050/IIC.c ****         IIC_SCL_1();
+ 454              		.loc 1 146 9 view .LVU87
+ 146:Modules/mpu6050/IIC.c ****         IIC_SCL_1();
+ 455              		.loc 1 146 15 is_stmt 0 view .LVU88
+ 456 001e 6400     		lsls	r4, r4, #1
+ 457              	.LVL39:
+ 146:Modules/mpu6050/IIC.c ****         IIC_SCL_1();
+ 458              		.loc 1 146 15 view .LVU89
+ 459 0020 E4B2     		uxtb	r4, r4
+ 460              	.LVL40:
+ 147:Modules/mpu6050/IIC.c ****         IIC_Delay();
+ 461              		.loc 1 147 9 is_stmt 1 view .LVU90
+ 462 0022 0C4E     		ldr	r6, .L42
+ 463 0024 0122     		movs	r2, #1
+ 464 0026 4FF48061 		mov	r1, #1024
+ 465 002a 3046     		mov	r0, r6
+ 466 002c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 467              	.LVL41:
+ 148:Modules/mpu6050/IIC.c ****         if (IIC_SDA_READ())
+ 468              		.loc 1 148 9 view .LVU91
+ 149:Modules/mpu6050/IIC.c ****         {
+ 469              		.loc 1 149 9 view .LVU92
+ 149:Modules/mpu6050/IIC.c ****         {
+ 470              		.loc 1 149 13 is_stmt 0 view .LVU93
+ 471 0030 4FF40061 		mov	r1, #2048
+ 472 0034 3046     		mov	r0, r6
+ 473 0036 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 474              	.LVL42:
+ 149:Modules/mpu6050/IIC.c ****         {
+ 475              		.loc 1 149 12 discriminator 1 view .LVU94
+ 476 003a 0028     		cmp	r0, #0
+ 477 003c E5D0     		beq	.L36
+ 151:Modules/mpu6050/IIC.c ****         }
+ 478              		.loc 1 151 13 is_stmt 1 view .LVU95
+ 151:Modules/mpu6050/IIC.c ****         }
+ 479              		.loc 1 151 18 is_stmt 0 view .LVU96
+ 480 003e 0134     		adds	r4, r4, #1
+ 481              	.LVL43:
+ 151:Modules/mpu6050/IIC.c ****         }
+ 482              		.loc 1 151 18 view .LVU97
+ 483 0040 E4B2     		uxtb	r4, r4
+ 484              	.LVL44:
+ 151:Modules/mpu6050/IIC.c ****         }
+ 485              		.loc 1 151 18 view .LVU98
+ 486 0042 E2E7     		b	.L36
+ 487              	.L41:
+ 156:Modules/mpu6050/IIC.c ****         IIC_NAck();
+ 488              		.loc 1 156 5 is_stmt 1 view .LVU99
+ 156:Modules/mpu6050/IIC.c ****         IIC_NAck();
+ 489              		.loc 1 156 7 is_stmt 0 view .LVU100
+ 490 0044 1FB9     		cbnz	r7, .L38
+ 157:Modules/mpu6050/IIC.c ****     else
+ 491              		.loc 1 157 9 is_stmt 1 view .LVU101
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 14
+
+
+ 492 0046 FFF7FEFF 		bl	IIC_NAck
+ 493              	.LVL45:
+ 494              	.L39:
+ 160:Modules/mpu6050/IIC.c **** }
+ 495              		.loc 1 160 5 view .LVU102
+ 161:Modules/mpu6050/IIC.c **** 
+ 496              		.loc 1 161 1 is_stmt 0 view .LVU103
+ 497 004a 2046     		mov	r0, r4
+ 498 004c F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 499              	.LVL46:
+ 500              	.L38:
+ 159:Modules/mpu6050/IIC.c ****     return value;
+ 501              		.loc 1 159 9 is_stmt 1 view .LVU104
+ 502 004e FFF7FEFF 		bl	IIC_Ack
+ 503              	.LVL47:
+ 504 0052 FAE7     		b	.L39
+ 505              	.L43:
+ 506              		.align	2
+ 507              	.L42:
+ 508 0054 000C0140 		.word	1073810432
+ 509              		.cfi_endproc
+ 510              	.LFE69:
+ 512              		.section	.text.IIC_GPIO_Init,"ax",%progbits
+ 513              		.align	1
+ 514              		.global	IIC_GPIO_Init
+ 515              		.syntax unified
+ 516              		.thumb
+ 517              		.thumb_func
+ 519              	IIC_GPIO_Init:
+ 520              	.LFB73:
+ 228:Modules/mpu6050/IIC.c **** 
+ 229:Modules/mpu6050/IIC.c **** /*
+ 230:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 231:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_GPIO_Config
+ 232:Modules/mpu6050/IIC.c **** *	功能说明: 配置IIC总线的GPIO，采用模拟IO的方式实现
+ 233:Modules/mpu6050/IIC.c **** *	形    参：无
+ 234:Modules/mpu6050/IIC.c **** *	返 回 值: 无
+ 235:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 236:Modules/mpu6050/IIC.c **** */
+ 237:Modules/mpu6050/IIC.c **** void IIC_GPIO_Init(void)
+ 238:Modules/mpu6050/IIC.c **** {
+ 521              		.loc 1 238 1 view -0
+ 522              		.cfi_startproc
+ 523              		@ args = 0, pretend = 0, frame = 24
+ 524              		@ frame_needed = 0, uses_anonymous_args = 0
+ 525 0000 00B5     		push	{lr}
+ 526              	.LCFI7:
+ 527              		.cfi_def_cfa_offset 4
+ 528              		.cfi_offset 14, -4
+ 529 0002 87B0     		sub	sp, sp, #28
+ 530              	.LCFI8:
+ 531              		.cfi_def_cfa_offset 32
+ 239:Modules/mpu6050/IIC.c ****     GPIO_InitTypeDef GPIO_InitStructure;
+ 532              		.loc 1 239 5 view .LVU106
+ 240:Modules/mpu6050/IIC.c **** 
+ 241:Modules/mpu6050/IIC.c ****     RCC_IIC_ENABLE;	/* 打开GPIO时钟 */
+ 533              		.loc 1 241 5 view .LVU107
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 15
+
+
+ 534              	.LBB2:
+ 535              		.loc 1 241 5 view .LVU108
+ 536              		.loc 1 241 5 view .LVU109
+ 537 0004 0C4B     		ldr	r3, .L46
+ 538 0006 9A69     		ldr	r2, [r3, #24]
+ 539 0008 42F00802 		orr	r2, r2, #8
+ 540 000c 9A61     		str	r2, [r3, #24]
+ 541              		.loc 1 241 5 view .LVU110
+ 542 000e 9B69     		ldr	r3, [r3, #24]
+ 543 0010 03F00803 		and	r3, r3, #8
+ 544 0014 0193     		str	r3, [sp, #4]
+ 545              		.loc 1 241 5 view .LVU111
+ 546 0016 019B     		ldr	r3, [sp, #4]
+ 547              	.LBE2:
+ 548              		.loc 1 241 5 view .LVU112
+ 242:Modules/mpu6050/IIC.c **** 
+ 243:Modules/mpu6050/IIC.c ****     GPIO_InitStructure.Pin = IIC_SCL_PIN | IIC_SDA_PIN;
+ 549              		.loc 1 243 5 view .LVU113
+ 550              		.loc 1 243 28 is_stmt 0 view .LVU114
+ 551 0018 4FF44063 		mov	r3, #3072
+ 552 001c 0293     		str	r3, [sp, #8]
+ 244:Modules/mpu6050/IIC.c ****     GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+ 553              		.loc 1 244 5 is_stmt 1 view .LVU115
+ 554              		.loc 1 244 30 is_stmt 0 view .LVU116
+ 555 001e 0323     		movs	r3, #3
+ 556 0020 0593     		str	r3, [sp, #20]
+ 245:Modules/mpu6050/IIC.c ****     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD;  	/* 开漏输出 */
+ 557              		.loc 1 245 5 is_stmt 1 view .LVU117
+ 558              		.loc 1 245 29 is_stmt 0 view .LVU118
+ 559 0022 1123     		movs	r3, #17
+ 560 0024 0393     		str	r3, [sp, #12]
+ 246:Modules/mpu6050/IIC.c ****     HAL_GPIO_Init(GPIO_PORT_IIC, &GPIO_InitStructure);
+ 561              		.loc 1 246 5 is_stmt 1 view .LVU119
+ 562 0026 02A9     		add	r1, sp, #8
+ 563 0028 0448     		ldr	r0, .L46+4
+ 564 002a FFF7FEFF 		bl	HAL_GPIO_Init
+ 565              	.LVL48:
+ 247:Modules/mpu6050/IIC.c **** 
+ 248:Modules/mpu6050/IIC.c ****     /* 给一个停止信号, 复位IIC总线上的所有设备到待机模式 */
+ 249:Modules/mpu6050/IIC.c ****     IIC_Stop();
+ 566              		.loc 1 249 5 view .LVU120
+ 567 002e FFF7FEFF 		bl	IIC_Stop
+ 568              	.LVL49:
+ 250:Modules/mpu6050/IIC.c **** }
+ 569              		.loc 1 250 1 is_stmt 0 view .LVU121
+ 570 0032 07B0     		add	sp, sp, #28
+ 571              	.LCFI9:
+ 572              		.cfi_def_cfa_offset 4
+ 573              		@ sp needed
+ 574 0034 5DF804FB 		ldr	pc, [sp], #4
+ 575              	.L47:
+ 576              		.align	2
+ 577              	.L46:
+ 578 0038 00100240 		.word	1073876992
+ 579 003c 000C0140 		.word	1073810432
+ 580              		.cfi_endproc
+ 581              	.LFE73:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 16
+
+
+ 583              		.section	.text.IIC_CheckDevice,"ax",%progbits
+ 584              		.align	1
+ 585              		.global	IIC_CheckDevice
+ 586              		.syntax unified
+ 587              		.thumb
+ 588              		.thumb_func
+ 590              	IIC_CheckDevice:
+ 591              	.LVL50:
+ 592              	.LFB74:
+ 251:Modules/mpu6050/IIC.c **** 
+ 252:Modules/mpu6050/IIC.c **** /*
+ 253:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 254:Modules/mpu6050/IIC.c **** *	函 数 名: IIC_CheckDevice
+ 255:Modules/mpu6050/IIC.c **** *	功能说明: 检测IIC总线设备，CPU向发送设备地址，然后读取设备应答来判�
+ 256:Modules/mpu6050/IIC.c **** *	形    参：_Address：设备的IIC总线地址
+ 257:Modules/mpu6050/IIC.c **** *	返 回 值: 返回值 0 表示正确， 返回1表示未探测到
+ 258:Modules/mpu6050/IIC.c **** ***************************************************************************************************
+ 259:Modules/mpu6050/IIC.c **** */
+ 260:Modules/mpu6050/IIC.c **** uint8_t IIC_CheckDevice(uint8_t _Address)
+ 261:Modules/mpu6050/IIC.c **** {
+ 593              		.loc 1 261 1 is_stmt 1 view -0
+ 594              		.cfi_startproc
+ 595              		@ args = 0, pretend = 0, frame = 0
+ 596              		@ frame_needed = 0, uses_anonymous_args = 0
+ 597              		.loc 1 261 1 is_stmt 0 view .LVU123
+ 598 0000 10B5     		push	{r4, lr}
+ 599              	.LCFI10:
+ 600              		.cfi_def_cfa_offset 8
+ 601              		.cfi_offset 4, -8
+ 602              		.cfi_offset 14, -4
+ 603 0002 0446     		mov	r4, r0
+ 262:Modules/mpu6050/IIC.c ****     uint8_t ucAck;
+ 604              		.loc 1 262 5 is_stmt 1 view .LVU124
+ 263:Modules/mpu6050/IIC.c **** 
+ 264:Modules/mpu6050/IIC.c ****     IIC_GPIO_Init();		/* 配置GPIO */
+ 605              		.loc 1 264 5 view .LVU125
+ 606 0004 FFF7FEFF 		bl	IIC_GPIO_Init
+ 607              	.LVL51:
+ 265:Modules/mpu6050/IIC.c **** 
+ 266:Modules/mpu6050/IIC.c ****     IIC_Start();		/* 发送启动信号 */
+ 608              		.loc 1 266 5 view .LVU126
+ 609 0008 FFF7FEFF 		bl	IIC_Start
+ 610              	.LVL52:
+ 267:Modules/mpu6050/IIC.c **** 
+ 268:Modules/mpu6050/IIC.c ****     /* 发送设备地址+读写控制bit（0 = w， 1 = r) bit7 先传 */
+ 269:Modules/mpu6050/IIC.c ****     IIC_Send_Byte(_Address|IIC_WR);
+ 611              		.loc 1 269 5 view .LVU127
+ 612 000c 2046     		mov	r0, r4
+ 613 000e FFF7FEFF 		bl	IIC_Send_Byte
+ 614              	.LVL53:
+ 270:Modules/mpu6050/IIC.c ****     ucAck = IIC_Wait_Ack();	/* 检测设备的ACK应答 */
+ 615              		.loc 1 270 5 view .LVU128
+ 616              		.loc 1 270 13 is_stmt 0 view .LVU129
+ 617 0012 FFF7FEFF 		bl	IIC_Wait_Ack
+ 618              	.LVL54:
+ 619 0016 0446     		mov	r4, r0
+ 620              	.LVL55:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 17
+
+
+ 271:Modules/mpu6050/IIC.c **** 
+ 272:Modules/mpu6050/IIC.c ****     IIC_Stop();			/* 发送停止信号 */
+ 621              		.loc 1 272 5 is_stmt 1 view .LVU130
+ 622 0018 FFF7FEFF 		bl	IIC_Stop
+ 623              	.LVL56:
+ 273:Modules/mpu6050/IIC.c **** 
+ 274:Modules/mpu6050/IIC.c ****     return ucAck;
+ 624              		.loc 1 274 5 view .LVU131
+ 275:Modules/mpu6050/IIC.c **** }
+ 625              		.loc 1 275 1 is_stmt 0 view .LVU132
+ 626 001c 2046     		mov	r0, r4
+ 627 001e 10BD     		pop	{r4, pc}
+ 628              		.loc 1 275 1 view .LVU133
+ 629              		.cfi_endproc
+ 630              	.LFE74:
+ 632              		.text
+ 633              	.Letext0:
+ 634              		.file 2 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/machine/_default_types.h"
+ 635              		.file 3 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/sys/_stdint.h"
+ 636              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 637              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s 			page 18
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 IIC.c
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:19     .text.IIC_Start:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:25     .text.IIC_Start:00000000 IIC_Start
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:69     .text.IIC_Start:00000038 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:74     .text.IIC_Stop:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:80     .text.IIC_Stop:00000000 IIC_Stop
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:116    .text.IIC_Stop:0000002c $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:121    .text.IIC_Send_Byte:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:127    .text.IIC_Send_Byte:00000000 IIC_Send_Byte
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:224    .text.IIC_Send_Byte:00000064 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:229    .text.IIC_Wait_Ack:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:235    .text.IIC_Wait_Ack:00000000 IIC_Wait_Ack
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:291    .text.IIC_Wait_Ack:0000003c $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:296    .text.IIC_Ack:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:302    .text.IIC_Ack:00000000 IIC_Ack
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:346    .text.IIC_Ack:00000038 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:351    .text.IIC_NAck:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:357    .text.IIC_NAck:00000000 IIC_NAck
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:395    .text.IIC_NAck:0000002c $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:400    .text.IIC_Read_Byte:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:406    .text.IIC_Read_Byte:00000000 IIC_Read_Byte
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:508    .text.IIC_Read_Byte:00000054 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:513    .text.IIC_GPIO_Init:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:519    .text.IIC_GPIO_Init:00000000 IIC_GPIO_Init
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:578    .text.IIC_GPIO_Init:00000038 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:584    .text.IIC_CheckDevice:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\ccdSTiv3.s:590    .text.IIC_CheckDevice:00000000 IIC_CheckDevice
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_GPIO_ReadPin
+HAL_GPIO_Init
