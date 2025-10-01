@@ -59,6 +59,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Buzzer_Pin GPIO_PIN_13
 #define Buzzer_GPIO_Port GPIOC
+#define Trig_Pin GPIO_PIN_15
+#define Trig_GPIO_Port GPIOC
+#define Left_IN1_Pin GPIO_PIN_4
+#define Left_IN1_GPIO_Port GPIOA
+#define Left_IN2_Pin GPIO_PIN_5
+#define Left_IN2_GPIO_Port GPIOA
+#define Right_IN1_Pin GPIO_PIN_0
+#define Right_IN1_GPIO_Port GPIOB
+#define Right_IN2_Pin GPIO_PIN_1
+#define Right_IN2_GPIO_Port GPIOB
 #define OLED_SCL_Pin GPIO_PIN_12
 #define OLED_SCL_GPIO_Port GPIOB
 #define OLED_SDA_Pin GPIO_PIN_13

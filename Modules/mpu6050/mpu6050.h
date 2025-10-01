@@ -90,7 +90,8 @@
 //#define MPU_READ    0XD1
 //#define MPU_WRITE   0XD0
 
-uint8_t MPU_Init(void); 								//初始化MPU6050
+uint8_t MPU_Init(void);                         //初始化MPU6050
+void mpu6050_init(void);								
 uint8_t MPU_Write_Len(uint8_t addr,uint8_t reg,uint8_t len,uint8_t *buf);//IIC连续写
 uint8_t MPU_Read_Len(uint8_t addr,uint8_t reg,uint8_t len,uint8_t *buf); //IIC连续读
 uint8_t MPU_Write_Byte(uint8_t reg,uint8_t data);				//IIC写一个字节

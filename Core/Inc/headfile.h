@@ -9,15 +9,21 @@
 /***************** *** ****************/
 #include "main.h"
 #include "gpio.h"
+#include "tim.h"
 /***************** Bsp ****************/
-
+#include "timer.h"
 /***************** Modules ****************/
 #include "led.h"
 #include "key.h"
 #include "buzzer.h"
 #include "oled.h"
 #include "mpu6050.h"
+#include "motor.h"
+#include "encoder.h"
 /***************** App ****************/
 #include "mode.h"
+
+extern int16_t left_encoder;
+extern int16_t right_encoder;
 
 #endif

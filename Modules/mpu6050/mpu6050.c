@@ -28,6 +28,14 @@ uint8_t MPU_Init(void)
     } else return 1;
     return 0;
 }
+
+void mpu6050_init(void)
+{
+    MPU_Init();			
+    mpu_dmp_init();		
+    HAL_Delay(100);
+}
+
 //设置MPU6050陀螺仪传感器满量程范围
 //fsr:0,±250dps;1,±500dps;2,±1000dps;3,±2000dps
 //返回值:0,设置成功

@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -54,7 +56,9 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+float pitch,roll,yaw; 		    //欧拉角
+short gyrox,gyroy,gyroz;		//陀螺仪原始数据
+int16_t cnt = 0;
 /* USER CODE END 0 */
 
 /**
@@ -81,31 +85,41 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-   float pitch,roll,yaw; 		    //欧拉角
-    short gyrox,gyroy,gyroz;		//陀螺仪原始数据
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  MPU_Init();			//MPU6050初始化
-  mpu_dmp_init();		//dmp初始化
-  HAL_Delay(300);
+  mpu6050_init();
+  motor_init();
+  encoder_init();
+  tim2_init();
   OLED_Init();
   OLED_Clear();  
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+ // OLED_ShowString(2, 1, "right");
+  OLED_ShowString(1, 1, "cnt");
+  OLED_ShowString(2, 1, "pitch");
+
   while (1)
   {
-    HAL_Delay(10);
-    mpu_dmp_get_data(&pitch, &roll, &yaw);	//必须要用while等待，才能读取成功
+    mpu_dmp_get_data(&pitch, &roll, &yaw);
     MPU_Get_Gyroscope(&gyrox, &gyroy, &gyroz);		//得到陀螺仪数据
-    OLED_ShowString(1, 1, "pitch");
-    OLED_ShowSignedNum(1, 8, pitch, 5);
-    OLED_ShowString(2, 1, "gy");
-    OLED_ShowSignedNum(2, 8, gyroy, 5);
+    OLED_ShowSignedNum(1, 8, cnt, 5);
+    OLED_ShowSignedNum(2, 8, pitch, 5);
+
+    motor_duty(2000, 2000);   // 左右轮正转
+    UpdateEncoderCounts();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -154,6 +168,21 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_0)
+    {
+      cnt++;
+        // 在这里处理 MPU6050 的中断事件，比如读取数据
+    }
+}
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if(htim == &htim2)
+    {
+      HAL_GPIO_TogglePin(GPIOB, BlueTooth_Pin);
+    }
+}
 /* USER CODE END 4 */
 
 /**

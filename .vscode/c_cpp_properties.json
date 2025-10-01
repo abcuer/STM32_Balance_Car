@@ -13,8 +13,10 @@
                 "${workspaceFolder}/Modules/buzzer",
                 "${workspaceFolder}/Modules/oled",
                 "${workspaceFolder}/Modules/mpu6050",
+                "${workspaceFolder}/Modules/motor",
+                "${workspaceFolder}/Modules/encoder",
                 "${workspaceFolder}/App",
-                "${workspaceFolder}/Bsp"
+                "${workspaceFolder}/Bsp/timer"
             ],
             "defines": [
                 "USE_HAL_DRIVER",
