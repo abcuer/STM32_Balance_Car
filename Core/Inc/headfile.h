@@ -20,6 +20,7 @@
 #include "mpu6050.h"
 #include "motor.h"
 #include "encoder.h"
+#include "hcsr04.h"
 /***************** App ****************/
 #include "mode.h"
 

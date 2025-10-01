@@ -59,8 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Buzzer_Pin GPIO_PIN_13
 #define Buzzer_GPIO_Port GPIOC
-#define Trig_Pin GPIO_PIN_15
-#define Trig_GPIO_Port GPIOC
+#define TRIG_Pin GPIO_PIN_15
+#define TRIG_GPIO_Port GPIOC
 #define Left_IN1_Pin GPIO_PIN_4
 #define Left_IN1_GPIO_Port GPIOA
 #define Left_IN2_Pin GPIO_PIN_5

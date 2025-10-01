@@ -15,6 +15,7 @@
                 "${workspaceFolder}/Modules/mpu6050",
                 "${workspaceFolder}/Modules/motor",
                 "${workspaceFolder}/Modules/encoder",
+                "${workspaceFolder}/Modules/hcsr04",
                 "${workspaceFolder}/App",
                 "${workspaceFolder}/Bsp/timer"
             ],

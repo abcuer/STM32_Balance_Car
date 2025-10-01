@@ -78,7 +78,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+ 
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -97,6 +97,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   mpu6050_init();
+  DWT_Init();
   motor_init();
   encoder_init();
   tim2_init();
@@ -108,17 +109,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
  // OLED_ShowString(2, 1, "right");
-  OLED_ShowString(1, 1, "cnt");
+  OLED_ShowString(1, 1, "dis");
   OLED_ShowString(2, 1, "pitch");
 
   while (1)
   {
     mpu_dmp_get_data(&pitch, &roll, &yaw);
     MPU_Get_Gyroscope(&gyrox, &gyroy, &gyroz);		//得到陀螺仪数据
-    OLED_ShowSignedNum(1, 8, cnt, 5);
+    float distance = HCSR04_Read(); 
+    OLED_ShowSignedNum(1, 8, distance, 5);
     OLED_ShowSignedNum(2, 8, pitch, 5);
 
-    motor_duty(2000, 2000);   // 左右轮正转
+    motor_duty(500, 500);   // 左右轮正转
     UpdateEncoderCounts();
     /* USER CODE END WHILE */
 
