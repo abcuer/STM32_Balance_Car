@@ -56,9 +56,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-float pitch,roll,yaw; 		    //欧拉角
-short gyrox,gyroy,gyroz;		//陀螺仪原始数据
-int16_t cnt = 0;
+volatile uint8_t mpu_data_flag = 0;
 /* USER CODE END 0 */
 
 /**
@@ -96,33 +94,25 @@ int main(void)
   MX_TIM4_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  mpu6050_init();
-  DWT_Init();
-  motor_init();
-  encoder_init();
-  tim2_init();
-  OLED_Init();
-  OLED_Clear();  
-  HAL_UART_Receive_IT(&huart2, &Serial_RxData, 1);
-
+  System_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
- // OLED_ShowString(2, 1, "right");
-  OLED_ShowString(1, 1, "dis");
-  OLED_ShowString(2, 1, "pitch");
+  OLED_ShowString(1, 3, "HAL Update");
+	OLED_ShowString(2, 3, "Balance_Car");
 
   while (1)
   {
-    mpu_dmp_get_data(&pitch, &roll, &yaw);
-    MPU_Get_Gyroscope(&gyrox, &gyroy, &gyroz);		//得到陀螺仪数据
-    float distance = HCSR04_Read(); 
-    OLED_ShowSignedNum(1, 8, distance, 5);
-    OLED_ShowSignedNum(2, 8, pitch, 5);
-    Bluetooth();
-    motor_duty(500, 500);   // 左右轮正转
-    UpdateEncoderCounts();
+
+    if(mpu_data_flag)
+		{
+			Balance();													  // 主控制逻辑
+			checkLiftState();  										// 提起检测
+			checkFallDown();											// 倒地检测
+			detectPutDown(); 											// 着陆检测
+			mpu_data_flag = 0;
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -175,15 +165,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == GPIO_PIN_0)
     {
-      cnt++;
-        // 在这里处理 MPU6050 的中断事件，比如读取数据
+      mpu_data_flag = 1;
     }
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if(htim == &htim2)
     {
-      // HAL_GPIO_TogglePin(GPIOB, BlueTooth_Pin);
+      UpdateSoundLight();
     }
 }
 /* USER CODE END 4 */

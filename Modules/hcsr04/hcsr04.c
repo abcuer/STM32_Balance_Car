@@ -1,4 +1,4 @@
-#include "hcsr04.h"
+#include "headfile.h"
 
 #define FILTER_SIZE 5
 float distance_buffer[FILTER_SIZE] = {0};
@@ -35,7 +35,7 @@ static float Filter_Distance(float new_value)
  * @brief 测量距离（阻塞方式）
  * @retval 平均滤波后的距离值（cm），异常返回 0
  */
-float HCSR04_Read(void)
+void HCSR04_Read(void)
 {
     uint32_t timeout = 0;
 
@@ -46,7 +46,7 @@ float HCSR04_Read(void)
 
     // 等待 ECHO 上升沿
     while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
-        if (timeout++ > 30000) return 0;
+        if (timeout++ > 30000) return;
     }
 
     uint32_t start = DWT->CYCCNT;  // 记录上升沿时间
@@ -54,7 +54,7 @@ float HCSR04_Read(void)
     // 等待 ECHO 下降沿
     timeout = 0;
     while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
-        if (timeout++ > 60000) return 0;
+        if (timeout++ > 60000) return;
     }
 
     uint32_t end = DWT->CYCCNT;    // 记录下降沿时间
@@ -64,7 +64,5 @@ float HCSR04_Read(void)
     float time_us = (float)cycles / (HAL_RCC_GetHCLKFreq() / 1000000.0f);
 
     // 换算距离（cm），声速 340m/s≈0.034 cm/us
-    float distance = (time_us * 0.034f) / 2.0f;
-
-    return Filter_Distance(distance);
+    distance = Filter_Distance((time_us * 0.034f) / 2.0f);
 }

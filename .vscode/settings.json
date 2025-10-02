@@ -18,6 +18,10 @@
         "stm32f1xx_hal_conf.h": "c",
         "iic.h": "c",
         "inttypes.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "stdio.h": "c",
+        "motor.h": "c",
+        "encoder.h": "c",
+        "mode.h": "c"
     }
 }

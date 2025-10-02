@@ -1,0 +1,34 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DAPlink",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}\\build\\Balance_Car.elf", // 要下载到调试器的文件,花括号中的是vscode两个预定义的参数
+            "request": "launch",
+            "type": "cortex-debug",
+            //使用J-link GDB Server时必须;其他GBD Server时可选（有可能帮助自动选择SVD文件）
+            //支持的设备见 https://www.segger.com/downloads/supported-devices.php
+            "device": "STM32F103C8",
+            //svd文件，有这个文件才能查看寄存器的值，每个单片机都不同。可以在以下地址找到 https://github.com/posborne/cmsis-svd
+            //该项目的根目录已经提供了C型开发板使用的外设svd文件
+            "svdFile": "STM32F103.svd",
+            "servertype": "openocd", //使用的GDB Server
+            "configFiles": [
+                "D:\\MCU\\1_STM32\\Balance_Car\\openocd_dap.cfg", // 配置文件已经在根目录提供,若要修改以此类推,openocd的路径下的share/scripts中有各种写好的配置文件
+            ],
+            "runToEntryPoint": "main", // 调试时在main函数入口停下
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
+            // dap若要使用log,请使用Jlink调试任务启动,之后再打开log任务
+            // 若想要在调试前编译并且打开log,可只使用log的prelaunch task并为log任务添加depends on依赖
+        }
+        
+
+    ]
+}

@@ -33,7 +33,7 @@ void mpu6050_init(void)
 {
     MPU_Init();			
     mpu_dmp_init();		
-    HAL_Delay(60);
+    HAL_Delay(200);
 }
 
 //设置MPU6050陀螺仪传感器满量程范围

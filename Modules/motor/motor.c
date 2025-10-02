@@ -1,5 +1,12 @@
-#include "motor.h"
-
+#include "headfile.h"
+Motor_t motor_left = {
+	.dir = 1,
+	.encoder = 0
+};
+Motor_t motor_right = {
+	.dir = 1,
+	.encoder = 0
+};
 void motor_init(void)
 {
     // 启动PWM输出
@@ -52,4 +59,17 @@ void motor_duty(int16_t dutyL, int16_t dutyR)
 {
     angle_left_duty(dutyL);
     angle_right_duty(dutyR);
+}
+
+
+uint8_t stop_flag = 0;
+void stop(void)
+{
+	stop_flag = 1;  // 立即设置停止标志
+	DataClear();
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+
 }

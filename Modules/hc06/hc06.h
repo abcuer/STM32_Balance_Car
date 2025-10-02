@@ -13,5 +13,5 @@ extern uint8_t Serial_RxData;    // 接收数据
 extern uint8_t Serial_RxFlag;    // 接收标志
 
 void Bluetooth(void);
-
+void bt_init(void);
 #endif
