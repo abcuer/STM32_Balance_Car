@@ -28,28 +28,6 @@ typedef struct
 	short z;
 }Gyro_t;
 
-typedef struct {
-    float kp;
-    float kd;
-	float out;
-    float med_angle;
-} UprightPID_t;  
-
-typedef struct {
-    float kp;
-    float ki;
-	float out;
-    float filter;
-	float speed;
-} SpeedPID_t; 
-
-typedef struct {
-    float kp;
-    float kd;
-	float out;
-	float speed;
-} TurnPID_t; 
-
 typedef struct{
 	uint8_t flag;
 	uint16_t time;

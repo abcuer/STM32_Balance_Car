@@ -240,9 +240,9 @@ void Bluetooth(void)
 	else if(bt_cmd.backward == 1 && bt_cmd.forward == 0)    speed_pid.speed -= 1;
 	else if(bt_cmd.forward == 0 && bt_cmd.backward == 0) 	speed_pid.speed = 0;
 	
-	if(bt_cmd.left == 1 && bt_cmd.right == 0)				speed_pid.speed -= 1; 
-	else if(bt_cmd.right == 1 && bt_cmd.left == 0) 			speed_pid.speed += 1;
-	else if(bt_cmd.left == 0 && bt_cmd.right == 0)			speed_pid.speed = 0; 
+	if(bt_cmd.left == 1 && bt_cmd.right == 0)				turn_pid.speed -= 1; 
+	else if(bt_cmd.right == 1 && bt_cmd.left == 0) 			turn_pid.speed += 1;
+	else if(bt_cmd.left == 0 && bt_cmd.right == 0)			turn_pid.speed = 0; 
 	
 	if(bt_cmd.forward && bt_cmd.left && bt_cmd.backward == 0 && bt_cmd.right == 0)
 	{

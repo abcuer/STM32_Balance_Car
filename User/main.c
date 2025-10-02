@@ -8,6 +8,8 @@ int main(void)
 	/*OLED显示*/
 	OLED_ShowString(1, 1, "dis:");
 	OLED_ShowString(1, 13, "cm");
+	OLED_ShowString(3, 3, "Balance_Car");
+	
 	while (1)
 	{	
 		if(mpu_data_flag)

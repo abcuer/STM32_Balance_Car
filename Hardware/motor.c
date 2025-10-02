@@ -7,7 +7,7 @@ Motor_t motor_left = {
 Motor_t motor_right = {
 	.dir = 1,
 	.encoder = 0
-};;
+};
 
 void Motor_Init(void)
 {
