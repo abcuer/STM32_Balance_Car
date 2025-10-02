@@ -10,6 +10,8 @@
 #include "main.h"
 #include "gpio.h"
 #include "tim.h"
+#include "usart.h"
+
 /***************** Bsp ****************/
 #include "timer.h"
 /***************** Modules ****************/
@@ -21,6 +23,7 @@
 #include "motor.h"
 #include "encoder.h"
 #include "hcsr04.h"
+#include "hc06.h"
 /***************** App ****************/
 #include "mode.h"
 

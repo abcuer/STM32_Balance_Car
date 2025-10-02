@@ -16,8 +16,12 @@
                 "${workspaceFolder}/Modules/motor",
                 "${workspaceFolder}/Modules/encoder",
                 "${workspaceFolder}/Modules/hcsr04",
-                "${workspaceFolder}/App",
-                "${workspaceFolder}/Bsp/timer"
+                "${workspaceFolder}/Modules/hc06",
+                "${workspaceFolder}/Bsp/timer",
+                "${workspaceFolder}/App/control",
+                "${workspaceFolder}/App/mode",
+                "${workspaceFolder}/App/pid",
+                
             ],
             "defines": [
                 "USE_HAL_DRIVER",

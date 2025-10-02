@@ -1,0 +1,116 @@
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"buzzer.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Modules/buzzer/buzzer.c"
+  18              		.section	.text.Buzzer_ON,"ax",%progbits
+  19              		.align	1
+  20              		.global	Buzzer_ON
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Buzzer_ON:
+  26              	.LFB68:
+   1:Modules/buzzer/buzzer.c **** #include "headfile.h"
+   2:Modules/buzzer/buzzer.c **** 
+   3:Modules/buzzer/buzzer.c **** void Buzzer_ON(void)
+   4:Modules/buzzer/buzzer.c **** {
+  27              		.loc 1 4 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 08B5     		push	{r3, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 3, -8
+  35              		.cfi_offset 14, -4
+   5:Modules/buzzer/buzzer.c **** 	HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+  36              		.loc 1 5 2 view .LVU1
+  37 0002 0022     		movs	r2, #0
+  38 0004 4FF40051 		mov	r1, #8192
+  39 0008 0148     		ldr	r0, .L3
+  40 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+  41              	.LVL0:
+   6:Modules/buzzer/buzzer.c **** }
+  42              		.loc 1 6 1 is_stmt 0 view .LVU2
+  43 000e 08BD     		pop	{r3, pc}
+  44              	.L4:
+  45              		.align	2
+  46              	.L3:
+  47 0010 00100140 		.word	1073811456
+  48              		.cfi_endproc
+  49              	.LFE68:
+  51              		.section	.text.Buzzer_OFF,"ax",%progbits
+  52              		.align	1
+  53              		.global	Buzzer_OFF
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s 			page 2
+
+
+  54              		.syntax unified
+  55              		.thumb
+  56              		.thumb_func
+  58              	Buzzer_OFF:
+  59              	.LFB69:
+   7:Modules/buzzer/buzzer.c **** 
+   8:Modules/buzzer/buzzer.c **** void Buzzer_OFF(void)  // PC13同时驱动LED和蜂鸣器
+   9:Modules/buzzer/buzzer.c **** {
+  60              		.loc 1 9 1 is_stmt 1 view -0
+  61              		.cfi_startproc
+  62              		@ args = 0, pretend = 0, frame = 0
+  63              		@ frame_needed = 0, uses_anonymous_args = 0
+  64 0000 08B5     		push	{r3, lr}
+  65              	.LCFI1:
+  66              		.cfi_def_cfa_offset 8
+  67              		.cfi_offset 3, -8
+  68              		.cfi_offset 14, -4
+  10:Modules/buzzer/buzzer.c **** 	HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+  69              		.loc 1 10 2 view .LVU4
+  70 0002 0122     		movs	r2, #1
+  71 0004 4FF40051 		mov	r1, #8192
+  72 0008 0148     		ldr	r0, .L7
+  73 000a FFF7FEFF 		bl	HAL_GPIO_WritePin
+  74              	.LVL1:
+  11:Modules/buzzer/buzzer.c **** }
+  75              		.loc 1 11 1 is_stmt 0 view .LVU5
+  76 000e 08BD     		pop	{r3, pc}
+  77              	.L8:
+  78              		.align	2
+  79              	.L7:
+  80 0010 00100140 		.word	1073811456
+  81              		.cfi_endproc
+  82              	.LFE69:
+  84              		.text
+  85              	.Letext0:
+  86              		.file 2 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/machine/_default_types.h"
+  87              		.file 3 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/sys/_stdint.h"
+  88              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+  89              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 buzzer.c
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:19     .text.Buzzer_ON:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:25     .text.Buzzer_ON:00000000 Buzzer_ON
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:47     .text.Buzzer_ON:00000010 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:52     .text.Buzzer_OFF:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:58     .text.Buzzer_OFF:00000000 Buzzer_OFF
+C:\Users\FASCIN~1\AppData\Local\Temp\cc4xF29s.s:80     .text.Buzzer_OFF:00000010 $d
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin

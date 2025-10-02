@@ -65,8 +65,11 @@ Modules/mpu6050/mpu6050.c \
 Modules/motor/motor.c \
 Modules/encoder/encoder.c \
 Modules/hcsr04/hcsr04.c \
+Modules/hc06/hc06.c \
 Bsp/timer/timer.c \
-App/mode.c \
+App/mode/mode.c \
+App/control/control.c \
+App/pid/pid.c \
 Core/Src/tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
@@ -140,8 +143,6 @@ C_INCLUDES =  \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
--IApp \
--IBsp/timer \
 -IModules/led \
 -IModules/key \
 -IModules/buzzer \
@@ -149,8 +150,12 @@ C_INCLUDES =  \
 -IModules/mpu6050 \
 -IModules/motor \
 -IModules/encoder \
--IModules/hcsr04
-
+-IModules/hcsr04 \
+-IModules/hc06 \
+-IBsp/timer \
+-IApp/control \
+-IApp/mode \
+-IApp/pid \
 # compile gcc flags
 # compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flags# compile gcc flagsASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 

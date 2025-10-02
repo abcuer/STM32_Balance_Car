@@ -17,6 +17,7 @@
         "core_sc300.h": "c",
         "stm32f1xx_hal_conf.h": "c",
         "iic.h": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "usart.h": "c"
     }
 }

@@ -103,7 +103,8 @@ int main(void)
   tim2_init();
   OLED_Init();
   OLED_Clear();  
-  
+  HAL_UART_Receive_IT(&huart2, &Serial_RxData, 1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,7 +120,7 @@ int main(void)
     float distance = HCSR04_Read(); 
     OLED_ShowSignedNum(1, 8, distance, 5);
     OLED_ShowSignedNum(2, 8, pitch, 5);
-
+    Bluetooth();
     motor_duty(500, 500);   // 左右轮正转
     UpdateEncoderCounts();
     /* USER CODE END WHILE */
@@ -182,7 +183,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if(htim == &htim2)
     {
-      HAL_GPIO_TogglePin(GPIOB, BlueTooth_Pin);
+      // HAL_GPIO_TogglePin(GPIOB, BlueTooth_Pin);
     }
 }
 /* USER CODE END 4 */

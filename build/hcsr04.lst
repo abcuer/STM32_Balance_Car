@@ -1,0 +1,547 @@
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"hcsr04.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Modules/hcsr04/hcsr04.c"
+  18              		.global	__aeabi_fadd
+  19              		.global	__aeabi_fdiv
+  20              		.section	.text.Filter_Distance,"ax",%progbits
+  21              		.align	1
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	Filter_Distance:
+  27              	.LVL0:
+  28              	.LFB67:
+   1:Modules/hcsr04/hcsr04.c **** #include "hcsr04.h"
+   2:Modules/hcsr04/hcsr04.c **** 
+   3:Modules/hcsr04/hcsr04.c **** #define FILTER_SIZE 5
+   4:Modules/hcsr04/hcsr04.c **** float distance_buffer[FILTER_SIZE] = {0};
+   5:Modules/hcsr04/hcsr04.c **** uint8_t filter_index = 0;
+   6:Modules/hcsr04/hcsr04.c **** 
+   7:Modules/hcsr04/hcsr04.c **** void DWT_Init(void)
+   8:Modules/hcsr04/hcsr04.c **** {
+   9:Modules/hcsr04/hcsr04.c ****     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // 允许 DWT
+  10:Modules/hcsr04/hcsr04.c ****     DWT->CYCCNT = 0;                               // 清零计数器
+  11:Modules/hcsr04/hcsr04.c ****     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;           // 使能计数
+  12:Modules/hcsr04/hcsr04.c **** }
+  13:Modules/hcsr04/hcsr04.c **** 
+  14:Modules/hcsr04/hcsr04.c **** static void delay_us(uint32_t us)
+  15:Modules/hcsr04/hcsr04.c **** {
+  16:Modules/hcsr04/hcsr04.c ****     uint32_t start = DWT->CYCCNT;
+  17:Modules/hcsr04/hcsr04.c ****     uint32_t ticks = us * (HAL_RCC_GetHCLKFreq() / 1000000);
+  18:Modules/hcsr04/hcsr04.c ****     while ((DWT->CYCCNT - start) < ticks);
+  19:Modules/hcsr04/hcsr04.c **** }
+  20:Modules/hcsr04/hcsr04.c **** 
+  21:Modules/hcsr04/hcsr04.c **** // 滑动平均滤波
+  22:Modules/hcsr04/hcsr04.c **** static float Filter_Distance(float new_value)
+  23:Modules/hcsr04/hcsr04.c **** {
+  29              		.loc 1 23 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 23 1 is_stmt 0 view .LVU1
+  34 0000 10B5     		push	{r4, lr}
+  35              	.LCFI0:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 2
+
+
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 4, -8
+  38              		.cfi_offset 14, -4
+  24:Modules/hcsr04/hcsr04.c ****     distance_buffer[filter_index] = new_value;
+  39              		.loc 1 24 5 is_stmt 1 view .LVU2
+  40              		.loc 1 24 20 is_stmt 0 view .LVU3
+  41 0002 0E49     		ldr	r1, .L5
+  42 0004 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+  43              		.loc 1 24 35 view .LVU4
+  44 0006 0E4A     		ldr	r2, .L5+4
+  45 0008 42F82300 		str	r0, [r2, r3, lsl #2]	@ float
+  25:Modules/hcsr04/hcsr04.c ****     filter_index = (filter_index + 1) % FILTER_SIZE;
+  46              		.loc 1 25 5 is_stmt 1 view .LVU5
+  47              		.loc 1 25 34 is_stmt 0 view .LVU6
+  48 000c 5A1C     		adds	r2, r3, #1
+  49              		.loc 1 25 39 view .LVU7
+  50 000e 0D4B     		ldr	r3, .L5+8
+  51 0010 83FB0203 		smull	r0, r3, r3, r2
+  52              	.LVL1:
+  53              		.loc 1 25 39 view .LVU8
+  54 0014 5B10     		asrs	r3, r3, #1
+  55 0016 03EB8303 		add	r3, r3, r3, lsl #2
+  56 001a D31A     		subs	r3, r2, r3
+  57              		.loc 1 25 18 view .LVU9
+  58 001c 0B70     		strb	r3, [r1]
+  26:Modules/hcsr04/hcsr04.c **** 
+  27:Modules/hcsr04/hcsr04.c ****     float sum = 0;
+  59              		.loc 1 27 5 is_stmt 1 view .LVU10
+  60              	.LVL2:
+  28:Modules/hcsr04/hcsr04.c ****     for (int i = 0; i < FILTER_SIZE; i++)
+  61              		.loc 1 28 5 view .LVU11
+  62              	.LBB2:
+  63              		.loc 1 28 10 view .LVU12
+  64              		.loc 1 28 14 is_stmt 0 view .LVU13
+  65 001e 0024     		movs	r4, #0
+  66              	.LBE2:
+  27:Modules/hcsr04/hcsr04.c ****     for (int i = 0; i < FILTER_SIZE; i++)
+  67              		.loc 1 27 11 view .LVU14
+  68 0020 0020     		movs	r0, #0
+  69              	.LBB3:
+  70              		.loc 1 28 5 view .LVU15
+  71 0022 05E0     		b	.L2
+  72              	.LVL3:
+  73              	.L3:
+  29:Modules/hcsr04/hcsr04.c ****         sum += distance_buffer[i];
+  74              		.loc 1 29 9 is_stmt 1 view .LVU16
+  75              		.loc 1 29 13 is_stmt 0 view .LVU17
+  76 0024 064B     		ldr	r3, .L5+4
+  77 0026 53F82410 		ldr	r1, [r3, r4, lsl #2]	@ float
+  78 002a FFF7FEFF 		bl	__aeabi_fadd
+  79              	.LVL4:
+  28:Modules/hcsr04/hcsr04.c ****     for (int i = 0; i < FILTER_SIZE; i++)
+  80              		.loc 1 28 39 is_stmt 1 discriminator 3 view .LVU18
+  81 002e 0134     		adds	r4, r4, #1
+  82              	.LVL5:
+  83              	.L2:
+  28:Modules/hcsr04/hcsr04.c ****     for (int i = 0; i < FILTER_SIZE; i++)
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 3
+
+
+  84              		.loc 1 28 23 discriminator 1 view .LVU19
+  85 0030 042C     		cmp	r4, #4
+  86 0032 F7DD     		ble	.L3
+  87              	.LBE3:
+  30:Modules/hcsr04/hcsr04.c **** 
+  31:Modules/hcsr04/hcsr04.c ****     return sum / FILTER_SIZE;
+  88              		.loc 1 31 5 view .LVU20
+  89              		.loc 1 31 16 is_stmt 0 view .LVU21
+  90 0034 0449     		ldr	r1, .L5+12
+  91 0036 FFF7FEFF 		bl	__aeabi_fdiv
+  92              	.LVL6:
+  32:Modules/hcsr04/hcsr04.c **** }
+  93              		.loc 1 32 1 view .LVU22
+  94 003a 10BD     		pop	{r4, pc}
+  95              	.LVL7:
+  96              	.L6:
+  97              		.loc 1 32 1 view .LVU23
+  98              		.align	2
+  99              	.L5:
+ 100 003c 00000000 		.word	filter_index
+ 101 0040 00000000 		.word	distance_buffer
+ 102 0044 67666666 		.word	1717986919
+ 103 0048 0000A040 		.word	1084227584
+ 104              		.cfi_endproc
+ 105              	.LFE67:
+ 107              		.section	.text.delay_us,"ax",%progbits
+ 108              		.align	1
+ 109              		.syntax unified
+ 110              		.thumb
+ 111              		.thumb_func
+ 113              	delay_us:
+ 114              	.LVL8:
+ 115              	.LFB66:
+  15:Modules/hcsr04/hcsr04.c ****     uint32_t start = DWT->CYCCNT;
+ 116              		.loc 1 15 1 is_stmt 1 view -0
+ 117              		.cfi_startproc
+ 118              		@ args = 0, pretend = 0, frame = 0
+ 119              		@ frame_needed = 0, uses_anonymous_args = 0
+  15:Modules/hcsr04/hcsr04.c ****     uint32_t start = DWT->CYCCNT;
+ 120              		.loc 1 15 1 is_stmt 0 view .LVU25
+ 121 0000 38B5     		push	{r3, r4, r5, lr}
+ 122              	.LCFI1:
+ 123              		.cfi_def_cfa_offset 16
+ 124              		.cfi_offset 3, -16
+ 125              		.cfi_offset 4, -12
+ 126              		.cfi_offset 5, -8
+ 127              		.cfi_offset 14, -4
+ 128 0002 0546     		mov	r5, r0
+  16:Modules/hcsr04/hcsr04.c ****     uint32_t ticks = us * (HAL_RCC_GetHCLKFreq() / 1000000);
+ 129              		.loc 1 16 5 is_stmt 1 view .LVU26
+  16:Modules/hcsr04/hcsr04.c ****     uint32_t ticks = us * (HAL_RCC_GetHCLKFreq() / 1000000);
+ 130              		.loc 1 16 14 is_stmt 0 view .LVU27
+ 131 0004 074B     		ldr	r3, .L10
+ 132 0006 5C68     		ldr	r4, [r3, #4]
+ 133              	.LVL9:
+  17:Modules/hcsr04/hcsr04.c ****     while ((DWT->CYCCNT - start) < ticks);
+ 134              		.loc 1 17 5 is_stmt 1 view .LVU28
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 4
+
+
+  17:Modules/hcsr04/hcsr04.c ****     while ((DWT->CYCCNT - start) < ticks);
+ 135              		.loc 1 17 28 is_stmt 0 view .LVU29
+ 136 0008 FFF7FEFF 		bl	HAL_RCC_GetHCLKFreq
+ 137              	.LVL10:
+  17:Modules/hcsr04/hcsr04.c ****     while ((DWT->CYCCNT - start) < ticks);
+ 138              		.loc 1 17 50 discriminator 1 view .LVU30
+ 139 000c 064A     		ldr	r2, .L10+4
+ 140 000e A2FB0023 		umull	r2, r3, r2, r0
+ 141 0012 9B0C     		lsrs	r3, r3, #18
+  17:Modules/hcsr04/hcsr04.c ****     while ((DWT->CYCCNT - start) < ticks);
+ 142              		.loc 1 17 14 discriminator 1 view .LVU31
+ 143 0014 05FB03F0 		mul	r0, r5, r3
+ 144              	.LVL11:
+  18:Modules/hcsr04/hcsr04.c **** }
+ 145              		.loc 1 18 5 is_stmt 1 view .LVU32
+ 146              	.L8:
+  18:Modules/hcsr04/hcsr04.c **** }
+ 147              		.loc 1 18 34 discriminator 1 view .LVU33
+  18:Modules/hcsr04/hcsr04.c **** }
+ 148              		.loc 1 18 16 is_stmt 0 discriminator 1 view .LVU34
+ 149 0018 024B     		ldr	r3, .L10
+ 150 001a 5B68     		ldr	r3, [r3, #4]
+  18:Modules/hcsr04/hcsr04.c **** }
+ 151              		.loc 1 18 25 discriminator 1 view .LVU35
+ 152 001c 1B1B     		subs	r3, r3, r4
+  18:Modules/hcsr04/hcsr04.c **** }
+ 153              		.loc 1 18 34 discriminator 1 view .LVU36
+ 154 001e 8342     		cmp	r3, r0
+ 155 0020 FAD3     		bcc	.L8
+  19:Modules/hcsr04/hcsr04.c **** 
+ 156              		.loc 1 19 1 view .LVU37
+ 157 0022 38BD     		pop	{r3, r4, r5, pc}
+ 158              	.LVL12:
+ 159              	.L11:
+  19:Modules/hcsr04/hcsr04.c **** 
+ 160              		.loc 1 19 1 view .LVU38
+ 161              		.align	2
+ 162              	.L10:
+ 163 0024 001000E0 		.word	-536866816
+ 164 0028 83DE1B43 		.word	1125899907
+ 165              		.cfi_endproc
+ 166              	.LFE66:
+ 168              		.section	.text.DWT_Init,"ax",%progbits
+ 169              		.align	1
+ 170              		.global	DWT_Init
+ 171              		.syntax unified
+ 172              		.thumb
+ 173              		.thumb_func
+ 175              	DWT_Init:
+ 176              	.LFB65:
+   8:Modules/hcsr04/hcsr04.c ****     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // 允许 DWT
+ 177              		.loc 1 8 1 is_stmt 1 view -0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 0
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181              		@ link register save eliminated.
+   9:Modules/hcsr04/hcsr04.c ****     DWT->CYCCNT = 0;                               // 清零计数器
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 5
+
+
+ 182              		.loc 1 9 5 view .LVU40
+   9:Modules/hcsr04/hcsr04.c ****     DWT->CYCCNT = 0;                               // 清零计数器
+ 183              		.loc 1 9 14 is_stmt 0 view .LVU41
+ 184 0000 074A     		ldr	r2, .L13
+ 185 0002 D2F8FC30 		ldr	r3, [r2, #252]
+   9:Modules/hcsr04/hcsr04.c ****     DWT->CYCCNT = 0;                               // 清零计数器
+ 186              		.loc 1 9 22 view .LVU42
+ 187 0006 43F08073 		orr	r3, r3, #16777216
+ 188 000a C2F8FC30 		str	r3, [r2, #252]
+  10:Modules/hcsr04/hcsr04.c ****     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;           // 使能计数
+ 189              		.loc 1 10 5 is_stmt 1 view .LVU43
+  10:Modules/hcsr04/hcsr04.c ****     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;           // 使能计数
+ 190              		.loc 1 10 17 is_stmt 0 view .LVU44
+ 191 000e 054B     		ldr	r3, .L13+4
+ 192 0010 0022     		movs	r2, #0
+ 193 0012 5A60     		str	r2, [r3, #4]
+  11:Modules/hcsr04/hcsr04.c **** }
+ 194              		.loc 1 11 5 is_stmt 1 view .LVU45
+  11:Modules/hcsr04/hcsr04.c **** }
+ 195              		.loc 1 11 8 is_stmt 0 view .LVU46
+ 196 0014 1A68     		ldr	r2, [r3]
+  11:Modules/hcsr04/hcsr04.c **** }
+ 197              		.loc 1 11 15 view .LVU47
+ 198 0016 42F00102 		orr	r2, r2, #1
+ 199 001a 1A60     		str	r2, [r3]
+  12:Modules/hcsr04/hcsr04.c **** 
+ 200              		.loc 1 12 1 view .LVU48
+ 201 001c 7047     		bx	lr
+ 202              	.L14:
+ 203 001e 00BF     		.align	2
+ 204              	.L13:
+ 205 0020 00ED00E0 		.word	-536810240
+ 206 0024 001000E0 		.word	-536866816
+ 207              		.cfi_endproc
+ 208              	.LFE65:
+ 210              		.global	__aeabi_ui2f
+ 211              		.global	__aeabi_fmul
+ 212              		.section	.text.HCSR04_Read,"ax",%progbits
+ 213              		.align	1
+ 214              		.global	HCSR04_Read
+ 215              		.syntax unified
+ 216              		.thumb
+ 217              		.thumb_func
+ 219              	HCSR04_Read:
+ 220              	.LFB68:
+  33:Modules/hcsr04/hcsr04.c **** 
+  34:Modules/hcsr04/hcsr04.c **** /**
+  35:Modules/hcsr04/hcsr04.c ****  * @brief 测量距离（阻塞方式）
+  36:Modules/hcsr04/hcsr04.c ****  * @retval 平均滤波后的距离值（cm），异常返回 0
+  37:Modules/hcsr04/hcsr04.c ****  */
+  38:Modules/hcsr04/hcsr04.c **** float HCSR04_Read(void)
+  39:Modules/hcsr04/hcsr04.c **** {
+ 221              		.loc 1 39 1 is_stmt 1 view -0
+ 222              		.cfi_startproc
+ 223              		@ args = 0, pretend = 0, frame = 0
+ 224              		@ frame_needed = 0, uses_anonymous_args = 0
+ 225 0000 38B5     		push	{r3, r4, r5, lr}
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 6
+
+
+ 226              	.LCFI2:
+ 227              		.cfi_def_cfa_offset 16
+ 228              		.cfi_offset 3, -16
+ 229              		.cfi_offset 4, -12
+ 230              		.cfi_offset 5, -8
+ 231              		.cfi_offset 14, -4
+  40:Modules/hcsr04/hcsr04.c ****     uint32_t timeout = 0;
+ 232              		.loc 1 40 5 view .LVU50
+ 233              	.LVL13:
+  41:Modules/hcsr04/hcsr04.c **** 
+  42:Modules/hcsr04/hcsr04.c ****     // 触发
+  43:Modules/hcsr04/hcsr04.c ****     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+ 234              		.loc 1 43 5 view .LVU51
+ 235 0002 274C     		ldr	r4, .L26
+ 236 0004 0122     		movs	r2, #1
+ 237 0006 4FF40041 		mov	r1, #32768
+ 238 000a 2046     		mov	r0, r4
+ 239 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 240              	.LVL14:
+  44:Modules/hcsr04/hcsr04.c ****     delay_us(10);
+ 241              		.loc 1 44 5 view .LVU52
+ 242 0010 0A20     		movs	r0, #10
+ 243 0012 FFF7FEFF 		bl	delay_us
+ 244              	.LVL15:
+  45:Modules/hcsr04/hcsr04.c ****     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+ 245              		.loc 1 45 5 view .LVU53
+ 246 0016 0022     		movs	r2, #0
+ 247 0018 4FF40041 		mov	r1, #32768
+ 248 001c 2046     		mov	r0, r4
+ 249 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 250              	.LVL16:
+  46:Modules/hcsr04/hcsr04.c **** 
+  47:Modules/hcsr04/hcsr04.c ****     // 等待 ECHO 上升沿
+  48:Modules/hcsr04/hcsr04.c ****     while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_RESET) {
+ 251              		.loc 1 48 5 view .LVU54
+  40:Modules/hcsr04/hcsr04.c **** 
+ 252              		.loc 1 40 14 is_stmt 0 view .LVU55
+ 253 0022 0024     		movs	r4, #0
+ 254              	.LVL17:
+ 255              	.L16:
+ 256              		.loc 1 48 49 is_stmt 1 view .LVU56
+ 257              		.loc 1 48 12 is_stmt 0 view .LVU57
+ 258 0024 4FF48041 		mov	r1, #16384
+ 259 0028 1D48     		ldr	r0, .L26
+ 260 002a FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 261              	.LVL18:
+ 262              		.loc 1 48 49 discriminator 1 view .LVU58
+ 263 002e 30B9     		cbnz	r0, .L24
+  49:Modules/hcsr04/hcsr04.c ****         if (timeout++ > 30000) return 0;
+ 264              		.loc 1 49 9 is_stmt 1 view .LVU59
+ 265              		.loc 1 49 20 is_stmt 0 view .LVU60
+ 266 0030 621C     		adds	r2, r4, #1
+ 267              	.LVL19:
+ 268              		.loc 1 49 12 view .LVU61
+ 269 0032 47F23053 		movw	r3, #30000
+ 270 0036 9C42     		cmp	r4, r3
+ 271 0038 2DD8     		bhi	.L21
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 7
+
+
+ 272              		.loc 1 49 20 view .LVU62
+ 273 003a 1446     		mov	r4, r2
+ 274 003c F2E7     		b	.L16
+ 275              	.LVL20:
+ 276              	.L24:
+  50:Modules/hcsr04/hcsr04.c ****     }
+  51:Modules/hcsr04/hcsr04.c **** 
+  52:Modules/hcsr04/hcsr04.c ****     uint32_t start = DWT->CYCCNT;  // 记录上升沿时间
+ 277              		.loc 1 52 5 is_stmt 1 view .LVU63
+ 278              		.loc 1 52 14 is_stmt 0 view .LVU64
+ 279 003e 194B     		ldr	r3, .L26+4
+ 280 0040 5D68     		ldr	r5, [r3, #4]
+ 281              	.LVL21:
+  53:Modules/hcsr04/hcsr04.c **** 
+  54:Modules/hcsr04/hcsr04.c ****     // 等待 ECHO 下降沿
+  55:Modules/hcsr04/hcsr04.c ****     timeout = 0;
+ 282              		.loc 1 55 5 is_stmt 1 view .LVU65
+  56:Modules/hcsr04/hcsr04.c ****     while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
+ 283              		.loc 1 56 5 view .LVU66
+  55:Modules/hcsr04/hcsr04.c ****     while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_14) == GPIO_PIN_SET) {
+ 284              		.loc 1 55 13 is_stmt 0 view .LVU67
+ 285 0042 0024     		movs	r4, #0
+ 286              	.LVL22:
+ 287              	.L19:
+ 288              		.loc 1 56 49 is_stmt 1 view .LVU68
+ 289              		.loc 1 56 12 is_stmt 0 view .LVU69
+ 290 0044 4FF48041 		mov	r1, #16384
+ 291 0048 1548     		ldr	r0, .L26
+ 292 004a FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 293              	.LVL23:
+ 294              		.loc 1 56 49 discriminator 1 view .LVU70
+ 295 004e 0128     		cmp	r0, #1
+ 296 0050 06D1     		bne	.L25
+  57:Modules/hcsr04/hcsr04.c ****         if (timeout++ > 60000) return 0;
+ 297              		.loc 1 57 9 is_stmt 1 view .LVU71
+ 298              		.loc 1 57 20 is_stmt 0 view .LVU72
+ 299 0052 621C     		adds	r2, r4, #1
+ 300              	.LVL24:
+ 301              		.loc 1 57 12 view .LVU73
+ 302 0054 4EF66023 		movw	r3, #60000
+ 303 0058 9C42     		cmp	r4, r3
+ 304 005a 1ED8     		bhi	.L22
+ 305              		.loc 1 57 20 view .LVU74
+ 306 005c 1446     		mov	r4, r2
+ 307 005e F1E7     		b	.L19
+ 308              	.LVL25:
+ 309              	.L25:
+  58:Modules/hcsr04/hcsr04.c ****     }
+  59:Modules/hcsr04/hcsr04.c **** 
+  60:Modules/hcsr04/hcsr04.c ****     uint32_t end = DWT->CYCCNT;    // 记录下降沿时间
+ 310              		.loc 1 60 5 is_stmt 1 view .LVU75
+ 311              		.loc 1 60 14 is_stmt 0 view .LVU76
+ 312 0060 104B     		ldr	r3, .L26+4
+ 313 0062 5868     		ldr	r0, [r3, #4]
+ 314              	.LVL26:
+  61:Modules/hcsr04/hcsr04.c **** 
+  62:Modules/hcsr04/hcsr04.c ****     // 计算脉宽时间（us）
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 8
+
+
+  63:Modules/hcsr04/hcsr04.c ****     uint32_t cycles = end - start;
+ 315              		.loc 1 63 5 is_stmt 1 view .LVU77
+  64:Modules/hcsr04/hcsr04.c ****     float time_us = (float)cycles / (HAL_RCC_GetHCLKFreq() / 1000000.0f);
+ 316              		.loc 1 64 5 view .LVU78
+ 317              		.loc 1 64 21 is_stmt 0 view .LVU79
+ 318 0064 401B     		subs	r0, r0, r5
+ 319              	.LVL27:
+ 320              		.loc 1 64 21 view .LVU80
+ 321 0066 FFF7FEFF 		bl	__aeabi_ui2f
+ 322              	.LVL28:
+ 323              		.loc 1 64 21 view .LVU81
+ 324 006a 0446     		mov	r4, r0
+ 325              	.LVL29:
+ 326              		.loc 1 64 38 view .LVU82
+ 327 006c FFF7FEFF 		bl	HAL_RCC_GetHCLKFreq
+ 328              	.LVL30:
+ 329              		.loc 1 64 60 discriminator 1 view .LVU83
+ 330 0070 FFF7FEFF 		bl	__aeabi_ui2f
+ 331              	.LVL31:
+ 332 0074 0C49     		ldr	r1, .L26+8
+ 333 0076 FFF7FEFF 		bl	__aeabi_fdiv
+ 334              	.LVL32:
+ 335 007a 0146     		mov	r1, r0
+ 336              		.loc 1 64 11 discriminator 1 view .LVU84
+ 337 007c 2046     		mov	r0, r4
+ 338 007e FFF7FEFF 		bl	__aeabi_fdiv
+ 339              	.LVL33:
+  65:Modules/hcsr04/hcsr04.c **** 
+  66:Modules/hcsr04/hcsr04.c ****     // 换算距离（cm），声速 340m/s≈0.034 cm/us
+  67:Modules/hcsr04/hcsr04.c ****     float distance = (time_us * 0.034f) / 2.0f;
+ 340              		.loc 1 67 5 is_stmt 1 view .LVU85
+ 341              		.loc 1 67 31 is_stmt 0 view .LVU86
+ 342 0082 0A49     		ldr	r1, .L26+12
+ 343 0084 FFF7FEFF 		bl	__aeabi_fmul
+ 344              	.LVL34:
+ 345              		.loc 1 67 11 view .LVU87
+ 346 0088 4FF07C51 		mov	r1, #1056964608
+ 347 008c FFF7FEFF 		bl	__aeabi_fmul
+ 348              	.LVL35:
+  68:Modules/hcsr04/hcsr04.c **** 
+  69:Modules/hcsr04/hcsr04.c ****     return Filter_Distance(distance);
+ 349              		.loc 1 69 5 is_stmt 1 view .LVU88
+ 350              		.loc 1 69 12 is_stmt 0 view .LVU89
+ 351 0090 FFF7FEFF 		bl	Filter_Distance
+ 352              	.LVL36:
+ 353              	.L15:
+  70:Modules/hcsr04/hcsr04.c **** }
+ 354              		.loc 1 70 1 view .LVU90
+ 355 0094 38BD     		pop	{r3, r4, r5, pc}
+ 356              	.LVL37:
+ 357              	.L21:
+  49:Modules/hcsr04/hcsr04.c ****     }
+ 358              		.loc 1 49 39 discriminator 1 view .LVU91
+ 359 0096 0020     		movs	r0, #0
+ 360 0098 FCE7     		b	.L15
+ 361              	.LVL38:
+ 362              	.L22:
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 9
+
+
+  57:Modules/hcsr04/hcsr04.c ****     }
+ 363              		.loc 1 57 39 discriminator 1 view .LVU92
+ 364 009a 0020     		movs	r0, #0
+ 365 009c FAE7     		b	.L15
+ 366              	.L27:
+ 367 009e 00BF     		.align	2
+ 368              	.L26:
+ 369 00a0 00100140 		.word	1073811456
+ 370 00a4 001000E0 		.word	-536866816
+ 371 00a8 00247449 		.word	1232348160
+ 372 00ac 96430B3D 		.word	1024148374
+ 373              		.cfi_endproc
+ 374              	.LFE68:
+ 376              		.global	filter_index
+ 377              		.section	.bss.filter_index,"aw",%nobits
+ 380              	filter_index:
+ 381 0000 00       		.space	1
+ 382              		.global	distance_buffer
+ 383              		.section	.bss.distance_buffer,"aw",%nobits
+ 384              		.align	2
+ 387              	distance_buffer:
+ 388 0000 00000000 		.space	20
+ 388      00000000 
+ 388      00000000 
+ 388      00000000 
+ 388      00000000 
+ 389              		.text
+ 390              	.Letext0:
+ 391              		.file 2 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/machine/_default_types.h"
+ 392              		.file 3 "D:/Application/Work/MSYS2/ucrt64/arm-none-eabi/include/sys/_stdint.h"
+ 393              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 394              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 395              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 396              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h"
+ARM GAS  C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 hcsr04.c
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:21     .text.Filter_Distance:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:26     .text.Filter_Distance:00000000 Filter_Distance
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:100    .text.Filter_Distance:0000003c $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:380    .bss.filter_index:00000000 filter_index
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:387    .bss.distance_buffer:00000000 distance_buffer
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:108    .text.delay_us:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:113    .text.delay_us:00000000 delay_us
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:163    .text.delay_us:00000024 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:169    .text.DWT_Init:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:175    .text.DWT_Init:00000000 DWT_Init
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:205    .text.DWT_Init:00000020 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:213    .text.HCSR04_Read:00000000 $t
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:219    .text.HCSR04_Read:00000000 HCSR04_Read
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:369    .text.HCSR04_Read:000000a0 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:381    .bss.filter_index:00000000 $d
+C:\Users\FASCIN~1\AppData\Local\Temp\cc2AHfSt.s:384    .bss.distance_buffer:00000000 $d
+
+UNDEFINED SYMBOLS
+__aeabi_fadd
+__aeabi_fdiv
+HAL_RCC_GetHCLKFreq
+__aeabi_ui2f
+__aeabi_fmul
+HAL_GPIO_WritePin
+HAL_GPIO_ReadPin
