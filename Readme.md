@@ -1,3 +1,5 @@
+# VScode + STM32CubeMX + Makefile UCRT64 + Openocd编译工具链
+
 # HAL库版本
 ## hal库版本存在bug
 - mpu6050与hcsr04无法同时读取

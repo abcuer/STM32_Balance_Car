@@ -10,7 +10,7 @@ void encoder_init(void)
 
 
 // 左轮编码器（TIM4）
- int16_t Encoder_left_Get(void)
+int16_t Encoder_left_Get(void)
 {
     int16_t temp;
     temp = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);   // 读取计数
