@@ -3,46 +3,54 @@
 #include "hc_sr04.h"
 
 /* 直立环 */
-UprightPID_t upright_pid = {
-    .kp = 300*0.6,		// 280*0.6
-    .kd = 2.2*0.6,		// 0.9*0.6
+PIDParam_t upright_pid = {
+    .kp = 400*0.6,		
+    .kd = 1.55*0.6,		
 	.out = 0,
-    .med_angle = 0.5
+    .tar = 0.8
 };
 
 /* 速度环 */
-SpeedPID_t speed_pid = {
-	.kp = -1,   		 //-0.58
-	.ki = -1/200,	//-0.58/200
+PIDParam_t speed_pid = {
+	.kp = -0.62,   		 
+	.ki = -0.62/200,	
 	.out = 0,
 	.filter = 0.7,
-	.speed = 0  /* 前进 后退 */
+	.tar = 0  /* 前进 后退 */
 };
 
 /* 转向环 */
-TurnPID_t turn_pid = {
-	.kd = 0,			// 0.5
+PIDParam_t turn_pid = {
+	.kd = 0.35,			
 	/* 左右移动 */
-	.kp = 0,			// -20
+	.kp = -30,			// 遥控模式下的转向速度
 	.out = 0,
-	.speed = 0 
+	.tar = 0 
 };
+
+PIDParam_t dist_pid = {
+	.kp = -0.35,				
+	.ki = -0.35/200,			
+	.out = 0,
+	.tar = 40
+};
+
 
 PID_t dist;
 
 static float Encoder_Err, filtered_Err, last_filtered_Err, Encoder_S;
 
 /* 机械中值，当前角度， gy*/
-float AnglePidCtrl(float tar, float angle, short gy)
+float AnglePidCtrl(float tar, float current, short gy)
 {
-	return upright_pid.kp*(angle - tar) + upright_pid.kd*gy;
+	return upright_pid.kp*(current - tar) + upright_pid.kd*gy;
 }
 
-float SpeedPidCtrl(float x, float speed_tar)
+float SpeedPidCtrl(float filter, float tar)
 {
 	UpdateEncoder();
-	Encoder_Err = (motor_left.encoder + motor_right.encoder) - speed_tar;
-	filtered_Err = (1-x)*Encoder_Err + x*last_filtered_Err;
+	Encoder_Err = (motor_left.encoder + motor_right.encoder) - tar;
+	filtered_Err = (1-filter)*Encoder_Err + filter*last_filtered_Err;
 	last_filtered_Err = filtered_Err;
 	Encoder_S += filtered_Err;
     if (Encoder_S > 10000) Encoder_S = 10000;
@@ -57,15 +65,15 @@ float SpeedPidCtrl(float x, float speed_tar)
 
 float TurnPidCtrl(short gz)
 {
-	return turn_pid.kd*gz + turn_pid.kp*turn_pid.speed;
+	return turn_pid.kd*gz + turn_pid.kp*turn_pid.tar;
 }
 
 void DistPidCtrl(void)
 {
-	dist.target = 30;
+	dist.target = dist_pid.tar;
 	dist.now = distance;
 	PidCalucate(&dist);
-	speed_pid.speed = dist.out;
+	speed_pid.tar = dist.out;
 }
 
 void PWMLimit(float PWMA, float PWMB)

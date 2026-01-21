@@ -1,5 +1,12 @@
 #include "headfile.h"
 
+/**
+ * @brief 注意事项
+ * @note 更改代码再烧录后，重新上电，代码才生效
+ *		 一定先初始化 IMU，否则无论如何都无法平衡？！ 嘻嘻
+		 最好不要更改模块的初始化顺序
+ */
+
 volatile uint8_t mpu_data_flag = 0;
 
 int main(void)

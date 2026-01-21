@@ -52,7 +52,7 @@
           <OutputName>Project</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\Listings\</ListingPath>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Start;.\User;.\Library;.\Modules;.\Modules\buzzer;.\Modules\encoder;.\Modules\hc06;.\Modules\hcsr04;.\Modules\key;.\Modules\led;.\Modules\oled;.\Modules\motor;.\Modules\mpu6050;.\Modules\mpu6050\eMPL;.\App\control;.\App\mode;.\App\pid;.\App\utils;.\BSP\delay;.\BSP\exti;.\BSP\pwm;.\BSP\sys;.\BSP\tim;.\BSP\usart;.\Bsp\iic</IncludePath>
+              <IncludePath>.\Start;.\User;.\Library;.\Modules;.\Modules\beep;.\Modules\encoder;.\Modules\hc06;.\Modules\hcsr04;.\Modules\key;.\Modules\led;.\Modules\oled;.\Modules\motor;.\Modules\mpu6050;.\Modules\mpu6050\eMPL;.\App\control;.\App\mode;.\App\pid;.\App\utils;.\Bsp\delay;.\Bsp\exti;.\Bsp\pwm;.\Bsp\sys;.\Bsp\tim;.\Bsp\usart;.\Bsp\iic;.\Bsp\gpio</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -787,6 +787,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Bsp/gpio</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Bsp\gpio\bsp_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_gpio.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Bsp\gpio\bsp_gpio.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Bsp/exti</GroupName>
           <Files>
             <File>
@@ -877,17 +892,17 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Modules/buzzer</GroupName>
+          <GroupName>Modules/beep</GroupName>
           <Files>
             <File>
-              <FileName>buzzer.c</FileName>
+              <FileName>beep.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Modules\buzzer\buzzer.c</FilePath>
+              <FilePath>.\Modules\beep\beep.c</FilePath>
             </File>
             <File>
-              <FileName>buzzer.h</FileName>
+              <FileName>beep.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Modules\buzzer\buzzer.h</FilePath>
+              <FilePath>.\Modules\beep\beep.h</FilePath>
             </File>
           </Files>
         </Group>

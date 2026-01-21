@@ -23,19 +23,16 @@ void Balance(void)
 	{
 		if(balance_state.mode == 2)
 		{
-			if(distance > 5 && distance <= 80)	DistPidCtrl(); 
-			else	speed_pid.speed = 0; 
+			if(distance > 0 && distance <= 120)	DistPidCtrl(); 
+			else	speed_pid.tar = 0; 
 		}
-		upright_pid.out = AnglePidCtrl(upright_pid.med_angle, mpu.pitch, mpu.gyro[1]);
-		speed_pid.out = SpeedPidCtrl(speed_pid.filter, speed_pid.speed);
-//		turn_pid.out = TurnPidCtrl(mpu.gyro[2]);
+		upright_pid.out = AnglePidCtrl(upright_pid.tar, mpu.pitch, mpu.gyro[1]);
+		speed_pid.out = SpeedPidCtrl(speed_pid.filter, speed_pid.tar);
+		turn_pid.out = TurnPidCtrl(mpu.gyro[2]);
 		
 		pwm_out = upright_pid.out - upright_pid.kp * speed_pid.out;
-//		PWMA = pwm_out - turn_pid.out;
-//		PWMB = pwm_out + turn_pid.out;
-		
-		PWMA = pwm_out;
-		PWMB = pwm_out;
+		PWMA = pwm_out - turn_pid.out;
+		PWMB = pwm_out + turn_pid.out;
 		PWMLimit(PWMA, PWMB);
 		MotorSetDuty(PWMA, PWMB);
 	} 
@@ -50,18 +47,18 @@ void Balance(void)
 void ModeSelect(void)
 {
 	static uint8_t last_mode = 0xFF;  
-	if(Key_GetNum())
+	if(Key_GetNum(KEY_USER))
 	{
 		balance_state.mode++;
 		balance_state.mode %= 3;
-		Buzzer_ON();
+		SetBeepMode(BEEP_SYSTEM, BEEP_ON);
 	}
 	else if(balance_state.mode == 1)
 	{
-		if(obstacle_blocked) Buzzer_ON();
-		else Buzzer_OFF();
+		if(obstacle_blocked) SetBeepMode(BEEP_SYSTEM, BEEP_ON);
+		else SetBeepMode(BEEP_SYSTEM, BEEP_OFF);
 	} 
-	else Buzzer_OFF();
+	else SetBeepMode(BEEP_SYSTEM, BEEP_OFF);
 	// 仅当模式发生变化时清除数据
     if (balance_state.mode != last_mode)
     {
@@ -71,29 +68,28 @@ void ModeSelect(void)
 	
 	if(balance_state.mode == 0) 										// 平衡模式
 	{
-//		speed_pid.kp = -0.58;
-//		speed_pid.ki = -0.58/200;
-		Balance_ON(); 
+		speed_pid.kp = -0.62;
+		speed_pid.ki = -0.62/200;
+		SetLedMode(LED_BALANCE, LED_ON);
 	}
-	else Balance_OFF();  
+	else 	SetLedMode(LED_BALANCE, LED_OFF);  
 	if(balance_state.mode == 1) 										// 遥控模式
 	{
-		speed_pid.kp = -0.55;
+		speed_pid.kp = -0.62;
 		speed_pid.ki = 0;
-		BlueTooth_ON();
+		SetLedMode(LED_BLUETOOTH, LED_ON); 
 		BlueTooth();  										
 		ObstacleAvoid();												// 警报
 	}
-	else BlueTooth_OFF();
+	else SetLedMode(LED_BLUETOOTH, LED_OFF); 
 	if(balance_state.mode == 2)											// 跟随模式
 	{
-		speed_pid.kp = -0.5;
+		speed_pid.kp = -0.62;
 		speed_pid.ki = 0;
-		Follow_ON(); 
+		SetLedMode(LED_FOLLOW, LED_ON); 
 		HCSR04_GetValue();
-		//OLED_ShowNum(2, 7, distance, 3);
 	}
-	else Follow_OFF(); 
+	else 	SetLedMode(LED_FOLLOW, LED_OFF); 
 }	
 
 /**
@@ -105,7 +101,7 @@ void ModeSelect(void)
 void CheckLiftState(void)
 {
     // 拿起条件：角度大且角速度较大，持续一定时间
-    if (fabs(mpu.pitch) > LIFT_ANGLE_THRESHOLD && abs(mpu.gyro[1]) > LIFT_GYRO_THRESHOLD && motor_right.encoder > 50)
+    if (fabs(mpu.pitch) > 40.0f  && abs(mpu.gyro[1]) > 100 && motor_right.encoder > 50)
 	{
 		balance_state.lifted_counter++;
 		if (balance_state.lifted_counter > 30)
@@ -130,7 +126,7 @@ void DetectPutDown(void)
     {
         if (fabs(mpu.pitch) < 20 && abs(mpu.gyro[1]) < 150 && abs(motor_right.encoder) < 120)
         {
-            if (balance_state.putdown_counter++ > PUTDOWN_WAIT_COUNT)
+            if (balance_state.putdown_counter++ > 30)
             {
 				balance_state.lifted_flag = 0;
 				balance_state.putdown_counter = 0;
@@ -153,7 +149,7 @@ void DetectPutDown(void)
  */
 void CheckFallDown(void)
 {
-	if (fabs(upright_pid.med_angle - mpu.pitch) > 70 && stop_flag == 0)			// 倒地检测
+	if (fabs(upright_pid.tar - mpu.pitch) > 70 && stop_flag == 0)			// 倒地检测
 	{
 		balance_state.balance_enable = 0;
 		MotorStop();
@@ -164,21 +160,19 @@ void CheckFallDown(void)
  * @brief 避障逻辑
  * @param 无
  * @retval 无
- * @note 距离过近则触发声光报警并禁止运动，距离恢复后解除限制
+ * @note 距离过近则触发警报
  */
 void ObstacleAvoid(void)
 {
 	HCSR04_GetValue();
-	if(distance > 0 && distance <= 80)
+	if(distance > 0 && distance <= 60)
 	{
 		if(!obstacle_blocked && distance < 25.0f) 
 		{
-			Buzzer_ON();
 			obstacle_blocked = 1;
 		}
-		else if (obstacle_blocked && distance > 60.0f)
+		else if (obstacle_blocked && distance > 40.0f)
 		{
-			Buzzer_OFF();
 			obstacle_blocked = 0; 
 		}
 	}

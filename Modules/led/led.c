@@ -1,41 +1,67 @@
-#include "stm32f10x.h"                  // Device header
+#include "led.h"
+#include "bsp_gpio.h" // 包含你的通用底层驱动
+#include <string.h>
 
-void LED_Init(void)
+static LEDInstance led[LED_NUM];
+
+/**
+ * @brief 根据当前状态更新GPIO电平
+ */
+static void UpdatePinLevel(LED_Type_e LedType)
 {
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15 | GPIO_Pin_8;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+    LEDInstance *instance = &led[LedType];
+    
+    // 逻辑：如果当前模式(ON/OFF)等于激活电平(HIGH/LOW)，则输出高电平，否则输出低电平
+    // 标准库中使用 Bit_SET 和 Bit_RESET
+    BitAction bitState = (instance->RunningParam.CurrentMode == (LED_Mode_e)instance->StaticParam.ActiveLevel) ? 
+                          Bit_SET : Bit_RESET;
+    
+    // 使用标准库底层函数
+    GPIO_WriteBit(instance->StaticParam.GPIO_Port, instance->StaticParam.GPIO_Pin, bitState);
 }
 
-void Follow_OFF(void)
+/**
+ * @brief 设置LED状态
+ */
+void SetLedMode(LED_Type_e LedType, LED_Mode_e Mode)
 {
-	GPIO_ResetBits(GPIOB, GPIO_Pin_14);
+    if (LedType >= LED_NUM) return;
+    led[LedType].RunningParam.CurrentMode = Mode;
+    UpdatePinLevel(LedType);
 }
 
-void Follow_ON(void)
+static void Led_Init(LedStaticParam_s *config, LED_Type_e LedType)
 {
-	GPIO_SetBits(GPIOB, GPIO_Pin_14);
+    if (LedType >= LED_NUM) return; 
+    
+    // 1. 复制配置
+    led[LedType].StaticParam = *config;
+    
+    // 2. 调用 bsp_gpio 的通用初始化函数
+    // 内部会自动处理 RCC 时钟开启
+    GPIO_Output(config->GPIO_Port, config->GPIO_Pin, GPIO_SPEED_HIGH);
+    
+    // 3. 初始状态关闭
+    SetLedMode(LedType, LED_OFF);
 }
 
-void BlueTooth_OFF(void)
-{
-	GPIO_ResetBits(GPIOB, GPIO_Pin_15);
-}
+void LedDeviceInit(void)
+{ 
+    LedStaticParam_s config;
 
-void BlueTooth_ON(void)
-{
-	GPIO_SetBits(GPIOB, GPIO_Pin_15);
-}
+    // 注意：这里的 Balance_GPIO_Port 等宏应在 bsp_gpio.h 或专门的 pin_define.h 中定义
+    config.GPIO_Port = Balance_GPIO_Port; // 示例
+    config.GPIO_Pin =  Balance_Pin;
+    config.ActiveLevel = LED_HIGH_LEVEL_ON;
+    Led_Init(&config, LED_BALANCE);
 
-void Balance_OFF(void)
-{
-	GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-}
+    config.GPIO_Port = BlueTooth_GPIO_Port;
+    config.GPIO_Pin = BlueTooth_Pin;
+    config.ActiveLevel = LED_HIGH_LEVEL_ON;
+    Led_Init(&config, LED_BLUETOOTH);
 
-void Balance_ON(void)
-{
-	GPIO_SetBits(GPIOB, GPIO_Pin_8);
+    config.GPIO_Port = Follow_GPIO_Port;
+    config.GPIO_Pin = Follow_Pin;
+    config.ActiveLevel = LED_HIGH_LEVEL_ON;
+    Led_Init(&config, LED_FOLLOW);
 }

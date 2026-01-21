@@ -16,8 +16,8 @@
 
 #include "led.h"
 #include "key.h"
-#include "buzzer.h"
-#include "OLED.h"
+#include "beep.h"
+#include "oled.h"
 #include "motor.h"
 #include "encoder.h"
 #include "mpu6050.h"

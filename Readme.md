@@ -2,7 +2,7 @@
 # [视频演示](https://www.bilibili.com/video/BV1s4JLzUE3u)
 ## [PCB开源](https://oshwhub.com/fascinating_sea/stm32_balancecar)
 ## 标准库：https://github.com/abcuer/STM32_Balance_Car
-## HAL/RTOS(推荐)：https://github.com/abcuer/HAL_Balance_Car
+## HAL/RTOS：https://github.com/abcuer/HAL_Balance_Car
 ## 功能说明
 
 - **平衡模式**：**白灯**表示**平衡模式**，具备较强的稳定平衡能力。
@@ -12,7 +12,6 @@
 - **着陆检测**：当小车处于**直立状态，放置地上一段时间**后，小车将**恢复运行**。
 - **倒地检测**：当小车处于**倒地状态**，小车将**停止运行**。
 ## 电子模块(带商品链接)
-### 总价(不算焊接工具):
 - [IN5824二极管*3(SS54 SMA) ￥2.18](https://e.tb.cn/h.6F2CfQNJmlFCtSV?tk=1M0LVkzgXYz )
 - [塔克 R5 Pro系列两轮自平衡小车 ￥106](https://e.tb.cn/h.6uAF5g45EmSc1Lb?tk=GEIKVkA9akD)
 - [STM32F103C8T6最小系统板(进口-typec口) ￥9](https://e.tb.cn/h.6F2Kzzjs2VY6GzD?tk=upy0VkzbU8N)

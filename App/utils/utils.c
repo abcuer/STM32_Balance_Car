@@ -13,17 +13,18 @@ static SoundLight_t sound_light = {
 void System_Init(void)
 {
 	IMU_Init();
-	/* 先初始化 IMU，否则无论如何都无法平衡，嘻嘻 */
+	/* 	一定先初始化 IMU，否则无论如何都无法平衡？！ 嘻嘻  */
+	/*	 最好不要更改初始化顺序	*/
 	Usart_Init(115200);
 	Timer_Init();
-	Key_Init();
-	LED_Init();
-	Buzzer_Init();	
+	KeyDeviceInit();
+	LedDeviceInit();
+	BeepDeviceInit();	
 	OLED_Init();	
 	Motor_Init();
 	Encoder_Init();
 	HCSR04_Init();
-	PID_Init(&dist, POSITION_PID, -0.6, 0, 0.1); 
+	PID_Init(&dist, POSITION_PID, dist_pid.kp, dist_pid.ki, dist_pid.kd); 
 	delay_ms(10);
 }
 
@@ -36,8 +37,8 @@ static void SoundLight(void)
 {
 	if(sound_light.flag == 0)
 	{
-		Buzzer_ON();
-		Follow_ON();
+		SetBeepMode(BEEP_SYSTEM, BEEP_ON);
+		SetLedMode(LED_FOLLOW, LED_ON); 
 		sound_light.flag = 1;
 	}
 }
@@ -55,8 +56,8 @@ static void UpdateSoundLight(void)
 
 		if(sound_light.time >= 20) 
 		{
-			Buzzer_OFF();
-			Follow_OFF();
+			SetBeepMode(BEEP_SYSTEM, BEEP_OFF);
+			SetLedMode(LED_FOLLOW, LED_OFF);
 			sound_light.time = 0;
 			sound_light.flag = 0; 
 		}

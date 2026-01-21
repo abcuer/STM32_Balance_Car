@@ -12,19 +12,19 @@ static RX_DATA_t rx_data;
 void BlueTooth(void)
 {
     // 1. 优先判断组合指令
-    if(bt_cmd.forward && bt_cmd.left)        { speed_pid.speed = MAX_Speed-10;  turn_pid.speed = MAX_Turn; }
-    else if(bt_cmd.forward && bt_cmd.right)  { speed_pid.speed = MAX_Speed+10;  turn_pid.speed = -MAX_Turn;  }
-    else if(bt_cmd.backward && bt_cmd.left)  { speed_pid.speed = -MAX_Speed+10; turn_pid.speed = -MAX_Turn; }
-    else if(bt_cmd.backward && bt_cmd.right) { speed_pid.speed = -MAX_Speed-10; turn_pid.speed = MAX_Turn;  }
+    if(bt_cmd.forward && bt_cmd.left)        { speed_pid.tar = MAX_Speed-10;  turn_pid.tar = MAX_Turn-5; }
+    else if(bt_cmd.forward && bt_cmd.right)  { speed_pid.tar = MAX_Speed+10;  turn_pid.tar = -MAX_Turn+5;  }
+    else if(bt_cmd.backward && bt_cmd.left)  { speed_pid.tar = -MAX_Speed+10; turn_pid.tar = -MAX_Turn+5; }
+    else if(bt_cmd.backward && bt_cmd.right) { speed_pid.tar = -MAX_Speed-10; turn_pid.tar = MAX_Turn-5;  }
     // 2. 再判断单一方向指令
-    else if(bt_cmd.forward)  { speed_pid.speed = MAX_Speed+3;  turn_pid.speed = 0; }
-    else if(bt_cmd.backward) { speed_pid.speed = -MAX_Speed-3; turn_pid.speed = 0; }
-    else if(bt_cmd.left)     { speed_pid.speed = 0;          turn_pid.speed = -25; }
-    else if(bt_cmd.right)    { speed_pid.speed = 0;          turn_pid.speed = 25;  }
+    else if(bt_cmd.forward)  { speed_pid.tar = MAX_Speed+3;  turn_pid.tar = 0; }
+    else if(bt_cmd.backward) { speed_pid.tar = -MAX_Speed-3; turn_pid.tar = 0; }
+    else if(bt_cmd.left)     { speed_pid.tar = 0;          turn_pid.tar = -MAX_Turn-7; }
+    else if(bt_cmd.right)    { speed_pid.tar = 0;          turn_pid.tar = MAX_Turn;  }
     else 
     {
-        speed_pid.speed = 0;
-        turn_pid.speed = 0;
+        speed_pid.tar = 0;
+        turn_pid.tar = 0;
     }
 }
 
