@@ -1,8 +1,6 @@
 # 全能智能平衡小车：蓝牙遥控+自动跟随+自我保护！
 # [视频演示](https://www.bilibili.com/video/BV1s4JLzUE3u)
 ## [PCB开源](https://oshwhub.com/fascinating_sea/stm32_balancecar)
-## 标准库：https://github.com/abcuer/STM32_Balance_Car
-## HAL/RTOS：https://github.com/abcuer/HAL_Balance_Car
 ## 功能说明
 
 - **平衡模式**：**白灯**表示**平衡模式**，具备较强的稳定平衡能力。
